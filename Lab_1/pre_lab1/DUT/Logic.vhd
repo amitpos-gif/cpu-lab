@@ -1,16 +1,19 @@
-LIBRARY ieee;
-USE ieee.std_logic_1164.all;
+library IEEE;
+use ieee.std_logic_1164.all;
+use ieee.std_logic_arith.all;
+use ieee.std_logic_unsigned.all;
+USE work.aux_package.all;
 --------------------------------------------------------
 entity logic is
      generic (n : integer := 8);
 	 port(x,y :in std_logic_vector(n-1 downto 0);
-	      ALUFN : in std_logic_vector(2 downto 0);
+	      ALUFN_in_logic : in std_logic_vector(2 downto 0); --change name + the connection will be in the 'top'
 		  logic_out: out std_logic_vector(n-1 downto 0));
 end logic;
 ------------------------------------------------------------------------
 architecture logic_dtf of logic is
 begin
-     with ALUFN select
+     with ALUFN_in_logic select
 	 logic_out <= not(y) when   "000", 
 	              y or x when   "001",
 				  y and x when  "010",

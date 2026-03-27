@@ -1,8 +1,10 @@
 library IEEE;
 use ieee.std_logic_1164.all;
+use ieee.std_logic_arith.all;
+use ieee.std_logic_unsigned.all;
 
-package aux_package is
 --------------------------------------------------------
+package aux_package is
 	component top is
 	GENERIC (n : INTEGER := 8;
 		   k : integer := 3;   -- k=log2(n)
@@ -21,6 +23,15 @@ package aux_package is
 			      s, cout: OUT std_logic);
 	end component;
 ---------------------------------------------------------	
+component AdderSub is 
+    generic (n : integer := 0);
+	port (
+	      x,y :in std_logic_vector(n-1 downto 0);
+		  sub_cont : in std_logic;
+		  res_out_Adder : OUT std_logic_vector(n-1 downto 0);
+		  c_out_Adder : out std_logic);
+end component;
+
 	
 	
 	
