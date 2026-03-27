@@ -5,10 +5,10 @@ use ieee.std_logic_unsigned.all;
 USE work.aux_package.all;
 --------------------------------------------------------
 entity AdderSub is 
-    generic (n : integer := 0);
+    generic (n : integer := 8);
 	port (
 	      x,y :in std_logic_vector(n-1 downto 0);
-		  sub_cont : in std_logic;
+		  sub_cont : in std_logic_vector(2 downto 0);
 		  res_out_Adder : OUT std_logic_vector(n-1 downto 0);
 		  c_out_Adder : out std_logic);
 end AdderSub;
@@ -17,6 +17,7 @@ architecture dtf_AdderSub of AdderSub is  --dtf = data flow
 --------------------------------------------------------
 signal       c_wire: std_logic_vector(n-1 downto 0);
 signal		 x_xor : std_logic_vector(n-1 downto 0);
+signal       chack_dir : std_logic;
 -------------------------------------------------------
 begin
 	x_xor(0) <= x(0) xor sub_cont;
