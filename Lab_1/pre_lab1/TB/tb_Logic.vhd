@@ -17,7 +17,7 @@ architecture rtb of tb_logic is
 
     component logic
         generic (n : integer := 8);
-        port (x, y : in std_logic_vector(n-1 downto 0);
+        port (x_logic, y_logic : in std_logic_vector(n-1 downto 0);
               alufn_in_logic : in std_logic_vector(2 downto 0);
               logic_out : out std_logic_vector(n-1 downto 0));
     end component;
@@ -27,8 +27,8 @@ begin
     DUT : logic
         generic map (n => n)
         port map(
-            x => x,
-            y => y,
+            x_logic => x,
+            y_logic => y,
             alufn_in_logic => alufn_in_logic,
             logic_out => logic_out
         );

@@ -7,9 +7,9 @@ USE work.aux_package.all;
 entity AdderSub is 
     generic (n : integer := 8);
 	port (
-	      x,y :in std_logic_vector(n-1 downto 0);
+	      x_adder,y_adder :in std_logic_vector(n-1 downto 0);
 		  alufn_adder : in STD_LOGIC_VECTOR(2 downto 0);
-		  res_out_Adder : OUT std_logic_vector(n-1 downto 0);
+		  res_out_Adder : OUT std_logic_vector(n-1 downto 0);  --3 input 2 output
 		  c_out_Adder : out std_logic);
 end AdderSub;
 --------------------------------------------------------
@@ -23,16 +23,16 @@ signal       sub_cont : std_logic; --is internal signal and not an external outp
 -------------------------------------------------------
 begin
 	with alufn_adder select
-    y_in <= y               when "000",
-            y               when "001",
+    y_in <= y_adder               when "000",
+            y_adder               when "001",
             (others => '0') when "010",
-            y               when "011",
-            y               when "100",
+            y_adder               when "011",
+            y_adder               when "100",
             (others => '0') when others;                           -- 3 with/select - covering all options
 	with alufn_adder select
-	x_in <= x               when "000",
-            x               when "001",
-            x               when "010",
+	x_in <= x_adder               when "000",
+            x_adder               when "001",
+            x_adder               when "010",
             conv_std_logic_vector(2, n) when "011",
             conv_std_logic_vector(2, n) when "100",
             (others => '0') when others;	
@@ -48,7 +48,7 @@ begin
 
 
 
-	x_xor(0) <= x_in(0) xor sub_cont;
+	x_xor(0) <= x_in(0) xor sub_cont; 
 
 	first_adder : FA port map(
 				xi => x_xor(0),

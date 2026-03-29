@@ -14,13 +14,21 @@ architecture rtb of tb_adder is
     signal alufn_adder : std_logic_vector(2 downto 0);
     signal x, y, s  : std_logic_vector(m-1 downto 0);
 
+    component AdderSub
+        generic (n : integer := 8);
+        port (x_adder, y_adder : in std_logic_vector(n-1 downto 0);
+              alufn_adder : in std_logic_vector(2 downto 0);
+              res_out_Adder : out std_logic_vector(n-1 downto 0);
+              c_out_Adder : out std_logic);
+    end component;
+
 begin
 
     L0 : AdderSub
         generic map (n => m)
         port map(
-            x => x,
-            y => y,
+            x_adder => x,
+            y_adder => y,
             alufn_adder => alufn_adder,
             res_out_Adder => s,
             c_out_Adder => cout

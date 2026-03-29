@@ -28,11 +28,11 @@ begin
 
 	stage : for i in 0 to k-1 generate
 		stages(i+1) <= stages(i)  when x_control(i) = '0' else
-			stages(i)(n-2**i-1 downto 0) & stages(2**i - 1 downto 0 => '0') when alufn_shifter(0) ='0' else
+			stages(i)(n-2**i-1 downto 0) & (2**i - 1 downto 0 => '0') when alufn_shifter(0) ='0' else
 			(2**i-1 downto 0 => '0') & stages(i)(n-1 downto 2**i);
 ---------------------- carry---------------------------------------------------
 		c_temp_shifter(i+1) <= c_temp_shifter(i) when x_control(i) = '0' else
-			stages(i)(n-2**i-1) when alufn_shifter(0) ='0' else
+			stages(i)(n-2**i) when alufn_shifter(0) ='0' else
 				stages(i)(2**i-1);
     end generate;
 

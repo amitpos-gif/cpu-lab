@@ -24,15 +24,30 @@ package aux_package is
 	end component;
 ---------------------------------------------------------	
 component AdderSub is 
-    generic (n : integer := 0);
+    generic (n : integer := 8);
 	port (
-	      x,y :in std_logic_vector(n-1 downto 0);
-		  sub_cont : in std_logic;
-		  res_out_Adder : OUT std_logic_vector(n-1 downto 0);
+	      x_adder,y_adder :in std_logic_vector(n-1 downto 0);
+		  alufn_adder : in STD_LOGIC_VECTOR(2 downto 0);
+		  res_out_Adder : OUT std_logic_vector(n-1 downto 0);  --3 input 2 output
 		  c_out_Adder : out std_logic);
 end component;
-
-	
+---------------------------------------------------------------
+component Shifter is
+	GENERIC (n : INTEGER := 8;
+		   k : integer := 3); --k = log_2_(n)
+	port(inp_shifter : in std_logic_vector(n-1 downto 0);-- y vector
+	     x_control : in std_logic_vector(k-1 downto 0); --x vector
+		 alufn_shifter :in std_logic_vector(2 downto 0); --alufn(0) is the dir
+		 outp_shifter : out std_logic_vector(n-1 downto 0);
+		 cout_shifter: out std_logic);
+end component;
+--------------------------------------------------------------------
+component logic is
+     generic (n : integer := 8);
+	 port(x_logic,y_logic :in std_logic_vector(n-1 downto 0);
+	      alufn_in_logic : in std_logic_vector(2 downto 0); 
+		  logic_out: out std_logic_vector(n-1 downto 0));
+end component;
 	
 	
 	
