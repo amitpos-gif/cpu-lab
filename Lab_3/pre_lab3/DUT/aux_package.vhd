@@ -1,3 +1,4 @@
+
 library IEEE;
 use ieee.std_logic_1164.all;
 use ieee.std_logic_arith.all;
@@ -5,8 +6,47 @@ use ieee.std_logic_unsigned.all;
 
 package aux_package is
 
+component ProgMem is
+    generic( Dwidth: integer := 16;
+             Awidth: integer := 6;
+             dept  : integer := 64);
+    port( clk, memEn : in  std_logic;
+          WmemData   : in  std_logic_vector(Dwidth-1 downto 0);
+          WmemAddr   : in  std_logic_vector(Awidth-1 downto 0);
+          RmemAddr   : in  std_logic_vector(Awidth-1 downto 0);
+          RmemData   : out std_logic_vector(Dwidth-1 downto 0));
+  end component;
 
-component RF is
+  component dataMem is
+    generic( Dwidth: integer := 16;
+             Awidth: integer := 6;
+             dept  : integer := 64);
+    port( clk, memEn : in  std_logic;
+          WmemData   : in  std_logic_vector(Dwidth-1 downto 0);
+          WmemAddr   : in  std_logic_vector(Awidth-1 downto 0);
+          RmemAddr   : in  std_logic_vector(Awidth-1 downto 0);
+          RmemData   : out std_logic_vector(Dwidth-1 downto 0));
+  end component;
+
+  component RF is
+    generic( Dwidth: integer := 16;
+             Awidth: integer := 4);
+    port( clk, rst, WregEn : in  std_logic;
+          WregData          : in  std_logic_vector(Dwidth-1 downto 0);
+          WregAddr          : in  std_logic_vector(Awidth-1 downto 0);
+          RregAddr          : in  std_logic_vector(Awidth-1 downto 0);
+          RregData          : out std_logic_vector(Dwidth-1 downto 0));
+  end component;
+
+  component BidirPin is
+    generic( width: integer := 16 );
+    port( Dout  : in    std_logic_vector(width-1 downto 0);
+          en    : in    std_logic;
+          Din   : out   std_logic_vector(width-1 downto 0);
+          IOpin : inout std_logic_vector(width-1 downto 0));
+		  
+  end component;  
+  component RF is
     generic (Dwidth : integer := 16;
              Awidth : integer := 4);
     port (clk      : in  std_logic;
@@ -55,52 +95,56 @@ component RF is
 
 ------------------------------------------------------------------------
   component Datapath is
-    port (
-      clk  : in std_logic;
-      rst  : in std_logic;
-      -- Control from CU (16 bits)
-      IRin         : in std_logic;
-      PCin         : in std_logic;
-      PCsel        : in std_logic;
-      Ain          : in std_logic;
-      Cin          : in std_logic;
-      Cout         : in std_logic;
-      RFout        : in std_logic;
-      RFin         : in std_logic;
-      Imm1_in      : in std_logic;
-      Imm2_in      : in std_logic;
-      DTCM_wr      : in std_logic;
-      DTCM_out     : in std_logic;
-      DTCM_addr_in : in std_logic;
-      ALUFN        : in std_logic_vector(2 downto 0);
-      -- Status to CU (15 bits)
-      ld_s   : out std_logic;
-      st_s   : out std_logic;
-      mov_s  : out std_logic;
-      done_s : out std_logic;
-      add_s  : out std_logic;
-      sub_s  : out std_logic;
-      jmp_s  : out std_logic;
-      jc_s   : out std_logic;
-      jnc_s  : out std_logic;
-      and_s  : out std_logic;
-      or_s   : out std_logic;
-      xor_s  : out std_logic;
-      Cflag  : out std_logic;
-      Zflag  : out std_logic;
-      Nflag  : out std_logic;
-      -- Testbench ports (green – Figure 2)
-      TBactive         : in  std_logic;
-      ITCM_tb_wr       : in  std_logic;
-      ITCM_tb_in       : in  std_logic_vector(15 downto 0);
-      ITCM_tb_addr_in  : in  std_logic_vector(5  downto 0);
-      DTCM_tb_wr       : in  std_logic;
-      DTCM_tb_in       : in  std_logic_vector(15 downto 0);
-      DTCM_tb_out      : out std_logic_vector(15 downto 0);
-      DTCM_tb_addr_in  : in  std_logic_vector(5  downto 0);
-      DTCM_tb_addr_out : in  std_logic_vector(5  downto 0));
-  end component;
-
+	generic( Dwidth: integer:=16;
+		 Awidth: integer:=6;
+		 dept:   integer:=64);
+  port (
+    clk  : in std_logic;
+    rst  : in std_logic;
+    -- Control from CU (16 bits) --
+    IRin         : in std_logic;
+    PCin         : in std_logic;
+    PCsel        : in std_logic;
+    Ain          : in std_logic;
+    Cin          : in std_logic;
+    Cout         : in std_logic;
+    RFout        : in std_logic;
+    RFin         : in std_logic;
+    RFaddr_rd    : in std_logic;
+    RFaddr_wr    : in std_logic;
+    Imm1_in      : in std_logic;
+    Imm2_in      : in std_logic;
+    DTCM_wr      : in std_logic;
+    DTCM_out     : in std_logic;
+    DTCM_addr_in : in std_logic;
+    ALUFN        : in std_logic_vector(3 downto 0);
+    -- Status to CU (15 bits) --
+    ld_s   : out std_logic;
+    st_s   : out std_logic;
+    mov_s  : out std_logic;
+    done_s : out std_logic;
+    add_s  : out std_logic;
+    sub_s  : out std_logic;
+    jmp_s  : out std_logic;
+    jc_s   : out std_logic;
+    jnc_s  : out std_logic;
+    and_s  : out std_logic;
+    or_s   : out std_logic;
+    xor_s  : out std_logic;
+    Cflag  : out std_logic;
+    Zflag  : out std_logic;
+    Nflag  : out std_logic;
+    -- Testbench ports (green line) --
+    TBactive         : in  std_logic;
+    ITCM_tb_wr       : in  std_logic;
+    ITCM_tb_in       : in  std_logic_vector(Dwidth-1 downto 0);
+    ITCM_tb_addr_in  : in  std_logic_vector(Awidth-1  downto 0);
+    DTCM_tb_wr       : in  std_logic;
+    DTCM_tb_in       : in  std_logic_vector(Dwidth-1 downto 0);
+    DTCM_tb_out      : out std_logic_vector(Dwidth-1 downto 0);
+    DTCM_tb_addr_in  : in  std_logic_vector(Awidth-1  downto 0);
+    DTCM_tb_addr_out : in  std_logic_vector(Awidth-1  downto 0)
+ end component;
 ------------------------------------------------------------------------
   component Control is
     port (
@@ -141,8 +185,8 @@ component RF is
       -- Done flag → Testbench  (Figure 1)
       done : out std_logic);
   end component;
-
-------------------------------------------------------------------------------
+  -------------------------------------------------
+  ------------------------------------------------------------------------------
 component FA IS
 	PORT (xi_FA, yi_FA, cin_FA: IN std_logic;
 			  s_FA, cout_FA: OUT std_logic);
@@ -163,22 +207,17 @@ component logic is
 	      alufn_in_logic : in std_logic_vector(3 downto 0); 
 		  logic_out: out std_logic_vector(n-1 downto 0));
 end component;
+------------------------------------------------------------------------------
+component alu is
+    generic: (n:integer :=16);
+    port(
+        A,B :in std_logic_vector(n-1 downto 0 ); --ra - A, rb - B
+        alufn:in std_logic_vector(3 downto 0 );
+        C  :out std_logic_vector(n-1 downto 0); --c like in the draw
+        C_flag, Z_flag,N_flag: out std_logic
+    );
+end component;
 -------------------------------------------------------------------------------
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 end aux_package;
 ------------------------------------------------------------------------
