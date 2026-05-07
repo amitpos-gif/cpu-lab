@@ -26,19 +26,19 @@ begin
 	x_xor(0) <= x_adder(0) xor sub_cont; 
 
 	first_adder : FA port map(
-				xi => x_xor(0),
-				yi => y_adder(0),
-				cin => sub_cont,
-				s => res_out_Adder(0),
-				cout => c_wire(0));
+				xi_FA => x_xor(0),
+				yi_FA => y_adder(0),
+				cin_FA => sub_cont,
+				s_FA => res_out_Adder(0),
+				cout_FA => c_wire(0));
 	rest_adder	: for i in 1 to n-1 generate
 		x_xor(i) <= x_adder(i) xor sub_cont;	
 		chain: FA port map(
-			   xi => x_xor(i),
-			   yi => y_adder(i),
-			   cin =>c_wire(i-1),
-			   s => res_out_Adder(i),
-			   cout => c_wire(i));
+			   xi_FA => x_xor(i),
+			   yi_FA => y_adder(i),
+			   cin_FA =>c_wire(i-1),
+			   s_FA => res_out_Adder(i),
+			   cout_FA => c_wire(i));
 	end generate;
 		c_out_Adder <= c_wire(n-1);
 END dtf_AdderSub;

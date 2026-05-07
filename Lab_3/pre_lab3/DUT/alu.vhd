@@ -5,7 +5,7 @@ use ieee.std_logic_unsigned.all;
 USE work.aux_package.all;
 -------------------------------------------------------------------
 entity alu is
-    generic: (n:integer :=16);
+    generic (n:integer :=16);
     port(
         A,B :in std_logic_vector(n-1 downto 0 ); --ra - A, rb - B
         alufn:in std_logic_vector(3 downto 0 );
@@ -49,20 +49,20 @@ logic_unit: logic
 		);
 
 with alufn select
-		alu_result <= out_adder when ("0001" | "0000"),    -- choosing what will be the output
-     	              out_logic when ("0010" | "0011"| "0100"),
+		alu_result <= out_adder when "0001" | "0000",    -- choosing what will be the output
+     	              out_logic when "0010" | "0011"| "0100",
 		        (others => '0') when others;
 C <= alu_result; -- assign  internal signal tothe output
 
 with alufn select
-            C_flag <= cout_adder when ("0001" | "0000"),
+            C_flag <= cout_adder when "0001" | "0000",
                              '0' when others;
 
 with alufn select
-			N_flag <=   out_adder(n-1) when ("0001" | "0000"),    -- choosing what will be the n flag
-				    	out_logic(n-1) when ("0010" | "0011"| "0100"),
+			N_flag <=   out_adder(n-1) when "0001" | "0000",    -- choosing what will be the n flag
+				    	out_logic(n-1) when "0010" | "0011"| "0100",
 						'0' when others;
 
-Zflag_o <= '1' when alu_result = (n-1 downto 0 => '0') else '0';         
+Z_flag <= '1' when alu_result = (n-1 downto 0 => '0') else '0';         
     
 end dtf_alu;
