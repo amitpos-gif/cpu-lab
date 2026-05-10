@@ -121,17 +121,17 @@ STIM : process
 
 
     procedure test_rtype(
-        signal op_s           : out std_logic;  --op signal example add_S
-        constant op_name      : in string;-- example add
-        constant expected_alu : in std_logic_vector(3 downto 0) --example '0000'
+        signal op_s           : out std_logic;
+        constant op_name      : in string;
+        constant expected_alu : in std_logic_vector(3 downto 0)
     ) is
     begin
-        clear_all_instr; --call the func
+        clear_all_instr;
 
         ----------------------------------------------------------------
         -- step 1: FETCH
-        
-        wait until rising_edge(clk);
+        -- FSM is already in FETCH here
+        ----------------------------------------------------------------
         wait for 1 ns;
 
         assert IRin = '1'
@@ -149,7 +149,7 @@ STIM : process
 
         ----------------------------------------------------------------
         -- step 2: DECODE1
-      
+        ----------------------------------------------------------------
         op_s <= '1';
 
         wait until rising_edge(clk);
@@ -178,7 +178,7 @@ STIM : process
 
         ----------------------------------------------------------------
         -- step 3: DECODE2 + EXECUTE
-        
+        ----------------------------------------------------------------
         wait until rising_edge(clk);
         wait for 1 ns;
 
@@ -209,7 +209,7 @@ STIM : process
 
         ----------------------------------------------------------------
         -- step 4: WRITEBACK
-      
+        ----------------------------------------------------------------
         wait until rising_edge(clk);
         wait for 1 ns;
 
@@ -236,469 +236,488 @@ STIM : process
         -- finish current instruction
         op_s <= '0';
 
+        -- return to FETCH for next instruction
+        wait until rising_edge(clk);
+        wait for 1 ns;
+
     end procedure;
-   -------------------------------------------------------------------------- 
-procedure test_jtype(
-    signal op_s          : out std_logic;
-    constant op_name     : in string;
-    constant cflag_value : in std_logic;
-    constant expected_pcsel : in std_logic_vector(1 downto 0)
-) is
-begin
-    clear_all_instr;
-
-    ----------------------------------------------------------------
-    -- step 1: FETCH
-  
-    wait until rising_edge(clk);
-    wait for 1 ns;
-
-    assert IRin = '1'
-        report op_name & " FETCH failed: IRin should be 1"
-        severity error;
-
-    assert PCsel = "10"
-        report op_name & " FETCH failed: PCsel should be 10"
-        severity error;
-
-
-    ----------------------------------------------------------------
-    -- step 2: DECODE1 / JUMP decision
-    
-    Cflag <= cflag_value;
-    op_s  <= '1';
-
-    wait until rising_edge(clk);
-    wait for 1 ns;
-
-    assert PCin = '1'
-        report op_name & " JUMP failed: PCin should be 1"
-        severity error;
-
-    assert PCsel = expected_pcsel
-        report op_name & " JUMP failed: wrong PCsel"
-        severity error;
-
-    assert DTCM_wr = '0'
-        report op_name & " JUMP failed: DTCM_wr should be 0"
-        severity error;
-
-    assert RFin = '0'
-        report op_name & " JUMP failed: RFin should be 0"
-        severity error;
-
-    op_s <= '0';
-    Cflag <= '0';
-
-end procedure;
----------------------------------------------------------------------
-procedure test_ld(
-    signal op_s      : out std_logic;
-    constant op_name : in string
-) is
-begin
-    clear_all_instr;
-
-    ----------------------------------------------------------------
-    -- step 1: FETCH
-    
-    wait until rising_edge(clk);
-    wait for 1 ns;
-
-    assert IRin = '1'
-        report op_name & " FETCH failed: IRin should be 1"
-        severity error;
-
-
-    ----------------------------------------------------------------
-    -- step 2: DECODE1
-    -- LD/ST: read rb -> REG_A
-    
-    op_s <= '1';
-
-    wait until rising_edge(clk);
-    wait for 1 ns;
-
-    assert RFout = '1'
-        report op_name & " DECODE1 failed: RFout should be 1"
-        severity error;
-
-    assert Ain = '1'
-        report op_name & " DECODE1 failed: Ain should be 1"
-        severity error;
-
-    assert RFaddr_rd = "10"
-        report op_name & " DECODE1 failed: RFaddr_rd should be 10"
-        severity error;
-
-
-    ----------------------------------------------------------------
-    -- step 3: S_LDST_EX1
-    -- effective address = rb + imm4 -> REG_C
-    
-    wait until rising_edge(clk);
-    wait for 1 ns;
-
-    assert Imm2_in = '1'
-        report op_name & " LDST_EX1 failed: Imm2_in should be 1"
-        severity error;
-
-    assert ALUFN = "0000"
-        report op_name & " LDST_EX1 failed: ALUFN should be ADD"
-        severity error;
-
-    assert Cin = '1'
-        report op_name & " LDST_EX1 failed: Cin should be 1"
-        severity error;
-
-
-    ----------------------------------------------------------------
-    -- step 4: S_LDST_EX2
-    -- REG_C -> DTCM_addr_reg
-    wait until rising_edge(clk);
-    wait for 1 ns;
 
-    assert Cout = '1'
-        report op_name & " LDST_EX2 failed: Cout should be 1"
-        severity error;
-
-    assert DTCM_addr_in = '1'
-        report op_name & " LDST_EX2 failed: DTCM_addr_in should be 1"
-        severity error;
-
-
-    ----------------------------------------------------------------
-    -- step 5: S_LD_EX3
-    -- DTCM_data -> RF[ra]
-  
-    wait until rising_edge(clk);
-    wait for 1 ns;
 
-    assert DTCM_out = '1'
-        report op_name & " LD_EX3 failed: DTCM_out should be 1"
-        severity error;
-
-    assert RFin = '1'
-        report op_name & " LD_EX3 failed: RFin should be 1"
-        severity error;
-
-    assert RFaddr_wr = '1'
-        report op_name & " LD_EX3 failed: RFaddr_wr should be 1"
-        severity error;
-
-    assert PCin = '1'
-        report op_name & " LD_EX3 failed: PCin should be 1"
-        severity error;
-
-    assert DTCM_wr = '0'
-        report op_name & " LD_EX3 failed: DTCM_wr should be 0"
-        severity error;
-
-    op_s <= '0';
-end procedure;
---------------------------------------------------------------------------------------
-procedure test_st(
-    signal op_s      : out std_logic;
-    constant op_name : in string
-) is
-begin
-    clear_all_instr;
-
-    ----------------------------------------------------------------
-    -- step 1: FETCH
-    
-    wait until rising_edge(clk);
-    wait for 1 ns;
-
-    assert IRin = '1'
-        report op_name & " FETCH failed: IRin should be 1"
-        severity error;
-
-
-    ----------------------------------------------------------------
-    -- step 2: DECODE1
-    -- LD/ST: read rb -> REG_A
-    
-    op_s <= '1';
-
-    wait until rising_edge(clk);
-    wait for 1 ns;
-
-    assert RFout = '1'
-        report op_name & " DECODE1 failed: RFout should be 1"
-        severity error;
-
-    assert Ain = '1'
-        report op_name & " DECODE1 failed: Ain should be 1"
-        severity error;
-
-    assert RFaddr_rd = "10"
-        report op_name & " DECODE1 failed: RFaddr_rd should be 10"
-        severity error;
-
-
-    ----------------------------------------------------------------
-    -- step 3: S_LDST_EX1
-    -- effective address = rb + imm4 -> REG_C
-    
-    wait until rising_edge(clk);
-    wait for 1 ns;
-
-    assert Imm2_in = '1'
-        report op_name & " LDST_EX1 failed: Imm2_in should be 1"
-        severity error;
-
-    assert ALUFN = "0000"
-        report op_name & " LDST_EX1 failed: ALUFN should be ADD"
-        severity error;
-
-    assert Cin = '1'
-        report op_name & " LDST_EX1 failed: Cin should be 1"
-        severity error;
-
+    procedure test_jtype(
+        signal op_s              : out std_logic;
+        constant op_name         : in string;
+        constant cflag_value     : in std_logic;
+        constant expected_pcsel  : in std_logic_vector(1 downto 0)
+    ) is
+    begin
+        clear_all_instr;
 
-    ----------------------------------------------------------------
-    -- step 4: S_LDST_EX2
-    -- REG_C -> DTCM_addr_reg
-    
-    wait until rising_edge(clk);
-    wait for 1 ns;
-
-    assert Cout = '1'
-        report op_name & " LDST_EX2 failed: Cout should be 1"
-        severity error;
-
-    assert DTCM_addr_in = '1'
-        report op_name & " LDST_EX2 failed: DTCM_addr_in should be 1"
-        severity error;
-
-
-    ----------------------------------------------------------------
-    -- step 5: S_ST_EX3
-    -- RF[ra] -> DTCM
-    
-    wait until rising_edge(clk);
-    wait for 1 ns;
-
-    assert RFout = '1'
-        report op_name & " ST_EX3 failed: RFout should be 1"
-        severity error;
-
-    assert RFaddr_rd = "11"
-        report op_name & " ST_EX3 failed: RFaddr_rd should be 11"
-        severity error;
-
-    assert DTCM_wr = '1'
-        report op_name & " ST_EX3 failed: DTCM_wr should be 1"
-        severity error;
-
-    assert PCin = '1'
-        report op_name & " ST_EX3 failed: PCin should be 1"
-        severity error;
-
-    assert RFin = '0'
-        report op_name & " ST_EX3 failed: RFin should be 0"
-        severity error;
-
-    op_s <= '0';
-end procedure;
-
-
-procedure test_mov(
-    signal op_s      : out std_logic;
-    constant op_name : in string
-) is
-begin
-    clear_all_instr;
-
-    ----------------------------------------------------------------
-    -- step 1: FETCH
-    
-    wait until rising_edge(clk);
-    wait for 1 ns;
-
-    assert IRin = '1'
-        report op_name & " FETCH failed: IRin should be 1"
-        severity error;
-
-    assert PCsel = "10"
-        report op_name & " FETCH failed: PCsel should be 10"
-        severity error;
-
-    assert PCin = '0'
-        report op_name & " FETCH failed: PCin should be 0 in FETCH"
-        severity error;
-
-
-    ----------------------------------------------------------------
-    -- step 2: DECODE1
-    -- MOV: no register pre-read needed
-    
-    op_s <= '1';
-
-    wait until rising_edge(clk);
-    wait for 1 ns;
-
-    assert RFout = '0'
-        report op_name & " DECODE1 failed: RFout should be 0"
-        severity error;
-
-    assert Ain = '0'
-        report op_name & " DECODE1 failed: Ain should be 0"
-        severity error;
-
-    assert RFin = '0'
-        report op_name & " DECODE1 failed: RFin should be 0"
-        severity error;
-
-    assert DTCM_wr = '0'
-        report op_name & " DECODE1 failed: DTCM_wr should be 0"
-        severity error;
-
-
-    ----------------------------------------------------------------
-    -- step 3: MOV_EX
-    -- imm8 -> BUS -> RF[ra]
-    
-    wait until rising_edge(clk);
-    wait for 1 ns;
-
-    assert Imm1_in = '1'
-        report op_name & " MOV_EX failed: Imm1_in should be 1"
-        severity error;
-
-    assert RFin = '1'
-        report op_name & " MOV_EX failed: RFin should be 1"
-        severity error;
-
-    assert RFaddr_wr = '1'
-        report op_name & " MOV_EX failed: RFaddr_wr should be 1"
-        severity error;
-
-    assert PCin = '1'
-        report op_name & " MOV_EX failed: PCin should be 1"
-        severity error;
-
-    assert DTCM_wr = '0'
-        report op_name & " MOV_EX failed: DTCM_wr should be 0"
-        severity error;
-
-    assert RFout = '0'
-        report op_name & " MOV_EX failed: RFout should be 0"
-        severity error;
-
-    -- finish MOV instruction
-    op_s <= '0';
-
-end procedure;
---------------------------------------------------------
-procedure test_done(
-    signal op_s      : out std_logic;
-    constant op_name : in string
-) is
-begin
-    clear_all_instr;
-
-    ----------------------------------------------------------------
-    -- step 1: FETCH
-    
-    wait until rising_edge(clk);
-    wait for 1 ns;
-
-    assert IRin = '1'
-        report op_name & " FETCH failed: IRin should be 1"
-        severity error;
-
-    assert PCsel = "10"
-        report op_name & " FETCH failed: PCsel should be 10"
-        severity error;
-
-    assert PCin = '0'
-        report op_name & " FETCH failed: PCin should be 0 in FETCH"
-        severity error;
-
-
-    ----------------------------------------------------------------
-    -- step 2: DECODE1
-    -- DONE instruction detected
-    
-    op_s <= '1';
-
-    wait until rising_edge(clk);
-    wait for 1 ns;
-
-    -- In DECODE1, done is not asserted yet.
-    -- The FSM only decides to go to S_DONE.
-    assert done = '0'
-        report op_name & " DECODE1 failed: done should still be 0"
-        severity error;
-
-    assert DTCM_wr = '0'
-        report op_name & " DECODE1 failed: DTCM_wr should be 0"
-        severity error;
-
-    assert RFin = '0'
-        report op_name & " DECODE1 failed: RFin should be 0"
-        severity error;
-
-    assert RFout = '0'
-        report op_name & " DECODE1 failed: RFout should be 0"
-        severity error;
-
-
-    ----------------------------------------------------------------
-    -- step 3: S_DONE
-    
-    wait until rising_edge(clk);
-    wait for 1 ns;
-
-    assert done = '1'
-        report op_name & " failed: done should be 1 in S_DONE"
-        severity error;
-
-    assert DTCM_wr = '0'
-        report op_name & " DONE state failed: DTCM_wr should be 0"
-        severity error;
-
-    assert RFin = '0'
-        report op_name & " DONE state failed: RFin should be 0"
-        severity error;
-
-    assert RFout = '0'
-        report op_name & " DONE state failed: RFout should be 0"
-        severity error;
-
-    assert PCin = '0'
-        report op_name & " DONE state failed: PCin should be 0"
-        severity error;
-
-    -- finish DONE input
-    op_s <= '0';
-
-end procedure;
-
-begin --begin of the process
+        ----------------------------------------------------------------
+        -- step 1: FETCH
+        ----------------------------------------------------------------
+        wait for 1 ns;
+
+        assert IRin = '1'
+            report op_name & " FETCH failed: IRin should be 1"
+            severity error;
+
+        assert PCsel = "10"
+            report op_name & " FETCH failed: PCsel should be 10"
+            severity error;
+
+
+        ----------------------------------------------------------------
+        -- step 2: DECODE1 / JUMP decision
+        ----------------------------------------------------------------
+        Cflag <= cflag_value;
+        op_s  <= '1';
+
+        wait until rising_edge(clk);
+        wait for 1 ns;
+
+        assert PCin = '1'
+            report op_name & " JUMP failed: PCin should be 1"
+            severity error;
+
+        assert PCsel = expected_pcsel
+            report op_name & " JUMP failed: wrong PCsel"
+            severity error;
+
+        assert DTCM_wr = '0'
+            report op_name & " JUMP failed: DTCM_wr should be 0"
+            severity error;
+
+        assert RFin = '0'
+            report op_name & " JUMP failed: RFin should be 0"
+            severity error;
+
+        op_s  <= '0';
+        Cflag <= '0';
+
+        -- return to FETCH for next instruction
+        wait until rising_edge(clk);
+        wait for 1 ns;
+
+    end procedure;
+
+
+    procedure test_ld(
+        signal op_s      : out std_logic;
+        constant op_name : in string
+    ) is
+    begin
+        clear_all_instr;
+
+        ----------------------------------------------------------------
+        -- step 1: FETCH
+        ----------------------------------------------------------------
+        wait for 1 ns;
+
+        assert IRin = '1'
+            report op_name & " FETCH failed: IRin should be 1"
+            severity error;
+
+
+        ----------------------------------------------------------------
+        -- step 2: DECODE1
+        -- LD/ST: read rb -> REG_A
+        ----------------------------------------------------------------
+        op_s <= '1';
+
+        wait until rising_edge(clk);
+        wait for 1 ns;
+
+        assert RFout = '1'
+            report op_name & " DECODE1 failed: RFout should be 1"
+            severity error;
+
+        assert Ain = '1'
+            report op_name & " DECODE1 failed: Ain should be 1"
+            severity error;
+
+        assert RFaddr_rd = "10"
+            report op_name & " DECODE1 failed: RFaddr_rd should be 10"
+            severity error;
+
+
+        ----------------------------------------------------------------
+        -- step 3: S_LDST_EX1
+        -- effective address = rb + imm4 -> REG_C
+        ----------------------------------------------------------------
+        wait until rising_edge(clk);
+        wait for 1 ns;
+
+        assert Imm2_in = '1'
+            report op_name & " LDST_EX1 failed: Imm2_in should be 1"
+            severity error;
+
+        assert ALUFN = "0000"
+            report op_name & " LDST_EX1 failed: ALUFN should be ADD"
+            severity error;
+
+        assert Cin = '1'
+            report op_name & " LDST_EX1 failed: Cin should be 1"
+            severity error;
+
+
+        ----------------------------------------------------------------
+        -- step 4: S_LDST_EX2
+        -- REG_C -> DTCM_addr_reg
+        ----------------------------------------------------------------
+        wait until rising_edge(clk);
+        wait for 1 ns;
+
+        assert Cout = '1'
+            report op_name & " LDST_EX2 failed: Cout should be 1"
+            severity error;
+
+        assert DTCM_addr_in = '1'
+            report op_name & " LDST_EX2 failed: DTCM_addr_in should be 1"
+            severity error;
+
+
+        ----------------------------------------------------------------
+        -- step 5: S_LD_EX3
+        -- DTCM_data -> RF[ra]
+        ----------------------------------------------------------------
+        wait until rising_edge(clk);
+        wait for 1 ns;
+
+        assert DTCM_out = '1'
+            report op_name & " LD_EX3 failed: DTCM_out should be 1"
+            severity error;
+
+        assert RFin = '1'
+            report op_name & " LD_EX3 failed: RFin should be 1"
+            severity error;
+
+        assert RFaddr_wr = '1'
+            report op_name & " LD_EX3 failed: RFaddr_wr should be 1"
+            severity error;
+
+        assert PCin = '1'
+            report op_name & " LD_EX3 failed: PCin should be 1"
+            severity error;
+
+        assert DTCM_wr = '0'
+            report op_name & " LD_EX3 failed: DTCM_wr should be 0"
+            severity error;
+
+        op_s <= '0';
+
+        -- return to FETCH for next instruction
+        wait until rising_edge(clk);
+        wait for 1 ns;
+
+    end procedure;
+
+
+    procedure test_st(
+        signal op_s      : out std_logic;
+        constant op_name : in string
+    ) is
+    begin
+        clear_all_instr;
+
+        ----------------------------------------------------------------
+        -- step 1: FETCH
+        ----------------------------------------------------------------
+        wait for 1 ns;
+
+        assert IRin = '1'
+            report op_name & " FETCH failed: IRin should be 1"
+            severity error;
+
+
+        ----------------------------------------------------------------
+        -- step 2: DECODE1
+        -- LD/ST: read rb -> REG_A
+        ----------------------------------------------------------------
+        op_s <= '1';
+
+        wait until rising_edge(clk);
+        wait for 1 ns;
+
+        assert RFout = '1'
+            report op_name & " DECODE1 failed: RFout should be 1"
+            severity error;
+
+        assert Ain = '1'
+            report op_name & " DECODE1 failed: Ain should be 1"
+            severity error;
+
+        assert RFaddr_rd = "10"
+            report op_name & " DECODE1 failed: RFaddr_rd should be 10"
+            severity error;
+
+
+        ----------------------------------------------------------------
+        -- step 3: S_LDST_EX1
+        -- effective address = rb + imm4 -> REG_C
+        ----------------------------------------------------------------
+        wait until rising_edge(clk);
+        wait for 1 ns;
+
+        assert Imm2_in = '1'
+            report op_name & " LDST_EX1 failed: Imm2_in should be 1"
+            severity error;
+
+        assert ALUFN = "0000"
+            report op_name & " LDST_EX1 failed: ALUFN should be ADD"
+            severity error;
+
+        assert Cin = '1'
+            report op_name & " LDST_EX1 failed: Cin should be 1"
+            severity error;
+
+
+        ----------------------------------------------------------------
+        -- step 4: S_LDST_EX2
+        -- REG_C -> DTCM_addr_reg
+        ----------------------------------------------------------------
+        wait until rising_edge(clk);
+        wait for 1 ns;
+
+        assert Cout = '1'
+            report op_name & " LDST_EX2 failed: Cout should be 1"
+            severity error;
+
+        assert DTCM_addr_in = '1'
+            report op_name & " LDST_EX2 failed: DTCM_addr_in should be 1"
+            severity error;
+
+
+        ----------------------------------------------------------------
+        -- step 5: S_ST_EX3
+        -- RF[ra] -> DTCM
+        ----------------------------------------------------------------
+        wait until rising_edge(clk);
+        wait for 1 ns;
+
+        assert RFout = '1'
+            report op_name & " ST_EX3 failed: RFout should be 1"
+            severity error;
+
+        assert RFaddr_rd = "11"
+            report op_name & " ST_EX3 failed: RFaddr_rd should be 11"
+            severity error;
+
+        assert DTCM_wr = '1'
+            report op_name & " ST_EX3 failed: DTCM_wr should be 1"
+            severity error;
+
+        assert PCin = '1'
+            report op_name & " ST_EX3 failed: PCin should be 1"
+            severity error;
+
+        assert RFin = '0'
+            report op_name & " ST_EX3 failed: RFin should be 0"
+            severity error;
+
+        op_s <= '0';
+
+        -- return to FETCH for next instruction
+        wait until rising_edge(clk);
+        wait for 1 ns;
+
+    end procedure;
+
+
+    procedure test_mov(
+        signal op_s      : out std_logic;
+        constant op_name : in string
+    ) is
+    begin
+        clear_all_instr;
+
+        ----------------------------------------------------------------
+        -- step 1: FETCH
+        ----------------------------------------------------------------
+        wait for 1 ns;
+
+        assert IRin = '1'
+            report op_name & " FETCH failed: IRin should be 1"
+            severity error;
+
+        assert PCsel = "10"
+            report op_name & " FETCH failed: PCsel should be 10"
+            severity error;
+
+        assert PCin = '0'
+            report op_name & " FETCH failed: PCin should be 0 in FETCH"
+            severity error;
+
+
+        ----------------------------------------------------------------
+        -- step 2: DECODE1
+        -- MOV: no register pre-read needed
+        ----------------------------------------------------------------
+        op_s <= '1';
+
+        wait until rising_edge(clk);
+        wait for 1 ns;
+
+        assert RFout = '0'
+            report op_name & " DECODE1 failed: RFout should be 0"
+            severity error;
+
+        assert Ain = '0'
+            report op_name & " DECODE1 failed: Ain should be 0"
+            severity error;
+
+        assert RFin = '0'
+            report op_name & " DECODE1 failed: RFin should be 0"
+            severity error;
+
+        assert DTCM_wr = '0'
+            report op_name & " DECODE1 failed: DTCM_wr should be 0"
+            severity error;
+
+
+        ----------------------------------------------------------------
+        -- step 3: MOV_EX
+        -- imm8 -> BUS -> RF[ra]
+        ----------------------------------------------------------------
+        wait until rising_edge(clk);
+        wait for 1 ns;
+
+        assert Imm1_in = '1'
+            report op_name & " MOV_EX failed: Imm1_in should be 1"
+            severity error;
+
+        assert RFin = '1'
+            report op_name & " MOV_EX failed: RFin should be 1"
+            severity error;
+
+        assert RFaddr_wr = '1'
+            report op_name & " MOV_EX failed: RFaddr_wr should be 1"
+            severity error;
+
+        assert PCin = '1'
+            report op_name & " MOV_EX failed: PCin should be 1"
+            severity error;
+
+        assert DTCM_wr = '0'
+            report op_name & " MOV_EX failed: DTCM_wr should be 0"
+            severity error;
+
+        assert RFout = '0'
+            report op_name & " MOV_EX failed: RFout should be 0"
+            severity error;
+
+        op_s <= '0';
+
+        -- return to FETCH for next instruction
+        wait until rising_edge(clk);
+        wait for 1 ns;
+
+    end procedure;
+
+
+    procedure test_done(
+        signal op_s      : out std_logic;
+        constant op_name : in string
+    ) is
+    begin
+        clear_all_instr;
+
+        ----------------------------------------------------------------
+        -- step 1: FETCH
+        ----------------------------------------------------------------
+        wait for 1 ns;
+
+        assert IRin = '1'
+            report op_name & " FETCH failed: IRin should be 1"
+            severity error;
+
+        assert PCsel = "10"
+            report op_name & " FETCH failed: PCsel should be 10"
+            severity error;
+
+        assert PCin = '0'
+            report op_name & " FETCH failed: PCin should be 0 in FETCH"
+            severity error;
+
+
+        ----------------------------------------------------------------
+        -- step 2: DECODE1
+        -- DONE instruction detected
+        ----------------------------------------------------------------
+        op_s <= '1';
+
+        wait until rising_edge(clk);
+        wait for 1 ns;
+
+        assert done = '0'
+            report op_name & " DECODE1 failed: done should still be 0"
+            severity error;
+
+        assert DTCM_wr = '0'
+            report op_name & " DECODE1 failed: DTCM_wr should be 0"
+            severity error;
+
+        assert RFin = '0'
+            report op_name & " DECODE1 failed: RFin should be 0"
+            severity error;
+
+        assert RFout = '0'
+            report op_name & " DECODE1 failed: RFout should be 0"
+            severity error;
+
+
+        ----------------------------------------------------------------
+        -- step 3: S_DONE
+        ----------------------------------------------------------------
+        wait until rising_edge(clk);
+        wait for 1 ns;
+
+        assert done = '1'
+            report op_name & " failed: done should be 1 in S_DONE"
+            severity error;
+
+        assert DTCM_wr = '0'
+            report op_name & " DONE state failed: DTCM_wr should be 0"
+            severity error;
+
+        assert RFin = '0'
+            report op_name & " DONE state failed: RFin should be 0"
+            severity error;
+
+        assert RFout = '0'
+            report op_name & " DONE state failed: RFout should be 0"
+            severity error;
+
+        assert PCin = '0'
+            report op_name & " DONE state failed: PCin should be 0"
+            severity error;
+
+        op_s <= '0';
+
+    end procedure;
+
+
+begin -- begin of the process
 
     ----------------------------------------------------------------
     -- Reset
- 
+    ----------------------------------------------------------------
     rst <= '1';
     ena <= '0';
 
     clear_all_instr;
 
-    wait until rising_edge(clk); --stable the system
+    wait until rising_edge(clk);
     wait until rising_edge(clk);
 
-    rst <= '0'; 
-    ena <= '1'; 
+    rst <= '0';
+    ena <= '1';
 
     wait for 1 ns;
 
 
     ----------------------------------------------------------------
-    -- R-type arithmetic / logic tests - calling the procedure
-   
+    -- R-type arithmetic / logic tests
+    ----------------------------------------------------------------
     test_rtype(add_s, "ADD", "0000");
     test_rtype(sub_s, "SUB", "0001");
     test_rtype(and_s, "AND", "0010");
@@ -707,25 +726,46 @@ begin --begin of the process
 
     report "All R-type tests finished successfully" severity note;
 
---start of J test
-test_jtype(jmp_s, "JMP",    '0', "01"); -- unconditional jump, Cflag doesn't matter
 
-test_jtype(jc_s,  "JC_C1",  '1', "01"); -- jump if carry, Cflag = 1 -> jump
-test_jtype(jc_s,  "JC_C0",  '0', "10"); -- jump if carry, Cflag = 0 -> no jump
+    ----------------------------------------------------------------
+    -- J-type jump tests
+    ----------------------------------------------------------------
+    test_jtype(jmp_s, "JMP",    '0', "01");
 
-test_jtype(jnc_s, "JNC_C0", '0', "01"); -- jump if no carry, Cflag = 0 -> jump
-test_jtype(jnc_s, "JNC_C1", '1', "10"); -- jump if no carry, Cflag = 1 -> no jump
----- I-type / MOV test
-test_mov(mov_s, "MOV");
-test_ld(ld_s, "LD");
-test_st(st_s, "ST");
--- DONE test------------------------------------------
--- keep DONE last, because FSM stays in S_DONE until reset
-test_done(done_s, "DONE");
+    test_jtype(jc_s,  "JC_C1",  '1', "01");
+    test_jtype(jc_s,  "JC_C0",  '0', "10");
+
+    test_jtype(jnc_s, "JNC_C0", '0', "01");
+    test_jtype(jnc_s, "JNC_C1", '1', "10");
 
 
+    ----------------------------------------------------------------
+    -- I-type / MOV test
+    ----------------------------------------------------------------
+    test_mov(mov_s, "MOV");
 
-        wait;
+
+    ----------------------------------------------------------------
+    -- Memory tests
+    ----------------------------------------------------------------
+    test_ld(ld_s, "LD");
+    test_st(st_s, "ST");
+
+
+    ----------------------------------------------------------------
+    -- DONE test
+    -- keep DONE last, because FSM stays in S_DONE until reset
+    ----------------------------------------------------------------
+    test_done(done_s, "DONE");
+
+
+    ----------------------------------------------------------------
+    -- End simulation
+    ----------------------------------------------------------------
+    report "All Control tests finished successfully" severity note;
+
+    wait;
+
 end process STIM;
 
 end architecture sim;
