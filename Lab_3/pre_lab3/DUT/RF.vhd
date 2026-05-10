@@ -9,7 +9,7 @@ generic( Dwidth: integer:=16;
 port(	clk,rst,WregEn: in std_logic;	
 		WregData:	in std_logic_vector(Dwidth-1 downto 0);
 		WregAddr,RregAddr:	
-					in std_logic_vector(Awidth-1 downto 0);
+					in std_logic_vector(Awidth-1 downto 0);  -- w -write , R - read -- 
 		RregData: 	out std_logic_vector(Dwidth-1 downto 0)
 );
 end RF;
@@ -23,14 +23,15 @@ signal sysRF: RegFile;
 begin			   
   process(clk,rst)
   begin
-	if (rst='1') then
+	if (rst='1') then -- first part in asyncronic procees is not depented on the clock. 
 		sysRF(0) <= (others=>'0');   -- R[0] is constant Zero value 
+		
 	elsif (clk'event and clk='1') then
 	    if (WregEn='1') then
 		    -- index is type of integer so we need to use 
 			-- buildin function conv_integer in order to change the type
 		    -- from std_logic_vector to integer
-			sysRF(conv_integer(WregAddr)) <= WregData; 
+			sysRF(conv_integer(WregAddr)) <= WregData; -- the sysRF is an arry, Wregaddr is std logic vector that have te data of the reg number/
 	    end if;
 	end if;
   end process;

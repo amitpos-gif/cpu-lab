@@ -29,11 +29,11 @@ begin
 		    -- index is type of integer so we need to use 
 			-- buildin function conv_integer in order to change the type
 		    -- from std_logic_vector to integer
-			sysRAM(conv_integer(WmemAddr)) <= WmemData; 
+			sysRAM(conv_integer(WmemAddr)) <= WmemData; -- to writh in up clk --
 	    end if;
 	end if;
   end process;
 	
-  RmemData <= sysRAM(conv_integer(RmemAddr));
+  RmemData <= sysRAM(conv_integer(RmemAddr)); -- to read the data --
 
 end behav;

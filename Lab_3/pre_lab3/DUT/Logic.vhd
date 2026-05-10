@@ -2,7 +2,6 @@ library IEEE;
 use ieee.std_logic_1164.all;
 use ieee.std_logic_arith.all;
 use ieee.std_logic_unsigned.all;
-USE work.aux_package.all;
 --------------------------------------------------------
 entity logic is
      generic (n : integer := 16);

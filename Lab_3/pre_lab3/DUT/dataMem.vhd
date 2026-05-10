@@ -25,7 +25,6 @@ begin
   process(clk)
   begin
 	if (clk'event and clk='1') then
-		RmemData <= sysRAM(conv_integer(RmemAddr));
 	    if (memEn='1') then
 		    -- index is type of integer so we need to use 
 			-- buildin function conv_integer in order to change the type
@@ -34,5 +33,7 @@ begin
 	    end if;
 	end if;
   end process;
+  
+  RmemData <= sysRAM(conv_integer(RmemAddr));
   
 end behav;

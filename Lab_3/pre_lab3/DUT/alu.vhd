@@ -29,7 +29,7 @@ y_adder_inp   <= B when (alufn_int = "0001" or alufn_int = "0000") else (others 
 x_logic_inp <= A when (alufn_int = "0010" or alufn_int = "0011" or alufn_int = "0100") else (others => '0'); -- the input will be as original for 0010/0011/0100
 y_logic_inp <= B when (alufn_int = "0010" or alufn_int = "0011" or alufn_int = "0100") else (others => '0'); -- the input will be as original for 0010/0011/0100
 
-Adder_sub: AdderSub
+Adder_Sub : AdderSub
     generic map(n =>n)
     port map(
     x_adder => x_adder_inp,
@@ -39,7 +39,7 @@ Adder_sub: AdderSub
 	c_out_Adder => cout_adder  
     );
 
-logic_unit: logic 
+logic_unit : logic 
 	generic map(n => n)
 	port map(
 	x_logic => x_logic_inp,
@@ -49,20 +49,28 @@ logic_unit: logic
 		);
 
 with alufn select
-		alu_result <= out_adder when "0001" | "0000",    -- choosing what will be the output
-     	              out_logic when "0010" | "0011"| "0100",
-		        (others => '0') when others;
+    alu_result <= out_adder when "0001",
+                  out_adder when "0000",
+                  out_logic when "0010",
+                  out_logic when "0011",
+                  out_logic when "0100",
+                  (others => '0') when others; 
+
 C <= alu_result; -- assign  internal signal tothe output
 
 with alufn select
-            C_flag <= cout_adder when "0001" | "0000",
-                             '0' when others;
+    C_flag <= cout_adder when "0001",
+              cout_adder when "0000",
+              '0' when others;
 
 with alufn select
-			N_flag <=   out_adder(n-1) when "0001" | "0000",    -- choosing what will be the n flag
-				    	out_logic(n-1) when "0010" | "0011"| "0100",
-						'0' when others;
+    N_flag <= out_adder(n-1) when "0001",
+              out_adder(n-1) when "0000",
+              out_logic(n-1) when "0010",
+              out_logic(n-1) when "0011",
+              out_logic(n-1) when "0100",
+              '0' when others;
 
-Z_flag <= '1' when alu_result = (n-1 downto 0 => '0') else '0';         
+Z_flag <= '1' when alu_result = conv_std_logic_vector(0, n) else '0';         
     
 end dtf_alu;

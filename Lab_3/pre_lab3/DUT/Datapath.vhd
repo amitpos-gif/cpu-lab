@@ -13,38 +13,40 @@ generic( Dwidth: integer:=16;
     clk  : in std_logic;
     rst  : in std_logic;
     -- Control from CU (16 bits) --
-    IRin         : in std_logic;
-    PCin         : in std_logic;
-    PCsel        : in std_logic;
-    Ain          : in std_logic;
-    Cin          : in std_logic;
-    Cout         : in std_logic;
-    RFout        : in std_logic;
-    RFin         : in std_logic;
-    RFaddr_rd    : in std_logic_vector(1 downto 0);
-    RFaddr_wr    : in std_logic_vector(1 downto 0);
-    Imm1_in      : in std_logic;
-    Imm2_in      : in std_logic;
-    DTCM_wr      : in std_logic;
-    DTCM_out     : in std_logic;
-    DTCM_addr_in : in std_logic;
-    ALUFN        : in std_logic_vector(3 downto 0);
+    DTCM_wr      : in std_logic;   -- DTCM write enable
+	  Cin          : in std_logic;   -- REG_C    ← ALU_result; flags ← ALU_flags
+	  Cout         : in std_logic;   -- REG_C          → BUS_wire
+	  DTCM_addr_in : in std_logic;   -- DTCM_addr_reg ← BUS_wire[5:0]
+	  DTCM_out     : in std_logic;   -- DTCM_data      → BUS_wire
+	  ALUFN        : in std_logic_vector(3 downto 0);
+  	Ain          : in std_logic;                        -- REG_A    ← BUS_wire  AND selects RFaddr_rd=rb
+	  RFin         : in std_logic;   
+  	RFout        : in std_logic;    
+    RFaddr_rd	 : in std_logic_vector(1 downto 0);       --00 = off  , 01 = rc  , 10 = rb --
+	  RFaddr_wr	 : in std_logic;                          -- 0 = off  , 1 = wr from the data is ra --
+    IRin         : in std_logic;                        -- ITCM_data -> to IR_reg
+    PCin         : in std_logic;                        -- PC_next -> to PC_reg
+    PCsel        : in std_logic_vector(1 downto 0);    -- '00'= "000000"  , '01'=PC+1+offset (jump target)  , "10" = PC+1 --
+    Imm1_in      : in std_logic;                        -- SignExt(IR[7:0])→ BUS_wire  (8-bit imm)
+    Imm2_in      : in std_logic;                        -- SignExt(IR[3:0])→ BUS_wire  (4-bit imm)
     -- Status to CU (15 bits) --
-    ld_s   : out std_logic;
-    st_s   : out std_logic;
-    mov_s  : out std_logic;
-    done_s : out std_logic;
-    add_s  : out std_logic;
-    sub_s  : out std_logic;
-    jmp_s  : out std_logic;
-    jc_s   : out std_logic;
-    jnc_s  : out std_logic;
-    and_s  : out std_logic;
-    or_s   : out std_logic;
-    xor_s  : out std_logic;
-    Cflag  : out std_logic;
-    Zflag  : out std_logic;
-    Nflag  : out std_logic;
+    mov_s  : out std_logic;   -- OPC = "1100"  move immediate
+    done_s : out std_logic;   -- OPC = "1111"  program done
+	  and_s  : out std_logic;   -- OPC = "0010"  bitwise AND
+    or_s   : out std_logic;   -- OPC = "0011"  bitwise OR
+    xor_s  : out std_logic;   -- OPC = "0100"  bitwise XOR
+	  jnc_s  : out std_logic;   -- OPC = "1001"  jump if no carry
+	  jc_s   : out std_logic;   -- OPC = "1000"  jump if carry
+	  jmp_s  : out std_logic;   -- OPC = "0111"  unconditional jump
+	  sub_s  : out std_logic;   -- OPC = "0001"  subtract
+    add_s  : out std_logic;   -- OPC = "0000"  add
+    ld_s   : out std_logic;   -- OPC = "1101"  load
+    st_s   : out std_logic;   -- OPC = "1110"  store
+    -- Status inputs from Datapath — ALU flags --
+    Cflag  : out std_logic;   -- carry  flag
+    Zflag  : out std_logic;   -- zero   flag
+    Nflag  : out std_logic;   -- negative flag
+
     -- Testbench ports (green line) --
     TBactive         : in  std_logic;
     ITCM_tb_wr       : in  std_logic;
@@ -60,6 +62,7 @@ end entity Datapath;
 
 ------------------------------------------------------------------------
 architecture rtl of Datapath is
+
 
   signal BUS_wire : std_logic_vector(Dwidth-1 downto 0);
 
@@ -84,7 +87,6 @@ architecture rtl of Datapath is
 
   -- PC arithmetic --
   signal PC_plus1 : std_logic_vector(7 downto 0);
-  signal PC_jump  : std_logic_vector(7 downto 0);
   signal PC_next  : std_logic_vector(7 downto 0);
 
   -- Sign-extended immediates --
@@ -109,6 +111,36 @@ architecture rtl of Datapath is
 
 begin
 
+---------------------------------------------------------------------------
+---------------------- assert for Testbench -------------------------------
+------------------------------$$ 1 $$-----------------------------------------
+BUS_CONTENTION_CHECK : process(RFout, Imm1_in, Imm2_in, Cout, DTCM_out)
+  variable drivers : integer;
+begin
+  drivers := 0;
+  if RFout    = '1' then drivers := drivers + 1; end if;
+  if Imm1_in  = '1' then drivers := drivers + 1; end if;
+  if Imm2_in  = '1' then drivers := drivers + 1; end if;
+  if Cout     = '1' then drivers := drivers + 1; end if;
+  if DTCM_out = '1' then drivers := drivers + 1; end if;
+
+  assert drivers <= 1
+    report "BUS CONTENTION: " & integer'image(drivers) & " drivers active simultaneously!"
+    severity ERROR;
+end process;
+--------------------------------$$ 2 $$---------------------------------------------
+PC_BOUNDS_CHECK : process(clk)
+begin
+  if rising_edge(clk) then
+    assert PC_reg < "01000000"
+      report "PC OUT OF BOUNDS: PC = " & integer'image(conv_integer(PC_reg))
+      severity WARNING;
+  end if;
+end process;
+--------------------------------$$ 3 $$--------------------------------------------
+
+-------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------
   -- ITCM: always read from PC (CPU read-only during execution)
   ITCM_rd_addr <= PC_reg(5 downto 0);
 
@@ -125,12 +157,12 @@ begin
   -- SECTION 2 - COMPONENT INSTANTIATIONS
   ------------------------------------------------------------------------------
 
-	ALU : alu 
+	alu_inst : alu 
 	generic map ( n => Dwidth) 
 	port map (
 		A      => REG_A,
 		B      => BUS_wire,
-		alufn  => IR_reg(15 downto 12), -- THIS IS THE OPC _CODE OF THE ALU FROM THE IR INSTRACTION --
+		alufn  => ALUFN,   ---  from the control ---
 		c      => ALU_result,
 		C_flag => ALU_C,
 		Z_flag => ALU_Z,
@@ -210,21 +242,19 @@ begin
   Imm2_sext <= (15 downto 4 => IR_reg(3)) & IR_reg(3 downto 0); -- 4-bit imm
   
   
-  
--- PC Arithmetic (Combinatorial) --
--- CACK THE FSM THAT WILL CHACK THE JNC AND LC AND C_FLAG TO SET THE WAL OF PC_SEL -- 
+-- PC Arithmetic --
 PC_plus1 <= PC_reg + "00000001";
-PC_next  <= (PC_reg + (IR_reg(7 downto 0) + "00000001" )) when PCsel = "01" else PC_plus1;
 
+PC_next <= (others => '0')                              when PCsel = "00" else
+           PC_reg + IR_reg(7 downto 0) + "00000001"    when PCsel = "01" else
+           PC_plus1;                                    -- PCsel = "10"
 
   -- RF Address MUX --
-  RF_read_addr  <= IR_reg(3 downto 0)
-                   when RFaddr_rd = '1'
-                   else IR_reg(7 downto 4);
+  RF_read_addr <= IR_reg(3 downto 0)  when RFaddr_rd = "01" else  -- rc = IR[3:0]
+                IR_reg(7 downto 4)  when RFaddr_rd = "10" else  -- rb = IR[7:4]
+                (others => '0');                                 -- "00" = off
 
-  RF_write_addr <= IR_reg(7 downto 4)
-                   when RFaddr_wr = '1'
-                   else IR_reg(11 downto 8);
+  RF_write_addr <= IR_reg(11 downto 8)  when RFaddr_wr = '1' else (others => '0');
 
   -- OPC Decoder (status flags to Control Unit) --
   add_s  <= '1' when IR_reg(15 downto 12) = "0000" else '0';
@@ -246,7 +276,6 @@ PC_next  <= (PC_reg + (IR_reg(7 downto 0) + "00000001" )) when PCsel = "01" else
   Cflag <= flag_C;
   Zflag <= flag_Z;
   Nflag <= flag_N;
-
 
   ------------------------ part 5 - SEQUENTIAL REGISTERS -----------------------
 
@@ -312,8 +341,7 @@ PC_next  <= (PC_reg + (IR_reg(7 downto 0) + "00000001" )) when PCsel = "01" else
     end if;
   end process;
 
-  -- DTCM Address Pipeline Register (D→Q with ENA) --
-  -- Latches BUS_wire[5:0] when DTCM_addr_in='1' (Execute-2 of ld/st).
+  -- DTCM_ADDR_REG --
   DTCM_ADDR_PROC : process(clk, rst)
   begin
     if rst = '1' then
@@ -326,6 +354,4 @@ PC_next  <= (PC_reg + (IR_reg(7 downto 0) + "00000001" )) when PCsel = "01" else
   end process;
 
 end architecture rtl;
--- =============================================================================
--- End of Datapath.vhd
--- =============================================================================
+---------------------------------------------------------------------------------
