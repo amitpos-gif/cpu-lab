@@ -22,7 +22,7 @@ generic( Dwidth: integer:=16;
   	Ain          : in std_logic;                        -- REG_A    ← BUS_wire  AND selects RFaddr_rd=rb
 	  RFin         : in std_logic;   
   	RFout        : in std_logic;    
-    RFaddr_rd	 : in std_logic_vector(1 downto 0);       --00 = off  , 01 = rc  , 10 = rb --
+    RFaddr_rd	 : in std_logic_vector(1 downto 0);       --00 = off  , 01 = rc  , 10 = rb , 11= ra --
 	  RFaddr_wr	 : in std_logic;                          -- 0 = off  , 1 = wr from the data is ra --
     IRin         : in std_logic;                        -- ITCM_data -> to IR_reg
     PCin         : in std_logic;                        -- PC_next -> to PC_reg
@@ -251,7 +251,8 @@ PC_next <= (others => '0')                              when PCsel = "00" else
 
   -- RF Address MUX --
   RF_read_addr <= IR_reg(3 downto 0)  when RFaddr_rd = "01" else  -- rc = IR[3:0]
-                IR_reg(7 downto 4)  when RFaddr_rd = "10" else  -- rb = IR[7:4]
+                  IR_reg(7 downto 4)  when RFaddr_rd = "10" else  -- rb = IR[7:4]  
+                  IR_reg(11 downto 8) when RFaddr_rd = "11" else  --ra = IR[11:8] --NEW!! 5\10 11:45
                 (others => '0');                                 -- "00" = off
 
   RF_write_addr <= IR_reg(11 downto 8)  when RFaddr_wr = '1' else (others => '0');

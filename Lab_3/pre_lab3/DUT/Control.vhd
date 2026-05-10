@@ -95,7 +95,7 @@ begin
   STATE_REG : process(clk, rst)
   begin
     if rst = '1' then
-      state_reg <= S_FETCH;          -- synchronous reset to Fetch
+      state_reg <= S_FETCH;          -- Asynchronous reset to Fetch
     elsif rising_edge(clk) then
       if ena = '1' then
         state_reg <= next_state;     -- advance FSM on every enabled clock edge
@@ -128,7 +128,7 @@ begin
     DTCM_addr_in <= '0';
     ALUFN        <= "0000";
     done         <= '0';
-    RFaddr_rd    <= "00";        --00 = off  , 01 = rc  , 10 = rb --
+    RFaddr_rd    <= "00";        --00 = off  , 01 = rc  , 10 = rb , 11 = ra -- what with Ra? we need to read in st op
     RFaddr_wr    <= '0';
 
     ----- rst option -----
@@ -264,7 +264,7 @@ begin
         when S_ST_EX3 =>
           RFout      <= '1';            -- RF[IR[11:8]] = RF[ra] → BUS_wire
           DTCM_wr    <= '1';            -- DTCM[DTCM_addr_reg] ← BUS_wire
-          RFaddr_rd  <= "10";
+          RFaddr_rd  <= "11";           --NEW!! 5\10 11:45
           PCin       <= '1';
           next_state <= S_FETCH;
 
@@ -287,7 +287,7 @@ begin
       severity ERROR;
     ---------------------------------$$ 2 $$-----------------------------------------------------
     assert not (Cin = '1' and Cout = '1')
-      report "Cin and Cout both asserted in state " & state_type'image(state_reg)
+      report "Cin and Cout both asserted in state " & state_t      st_s   : in std_logic;   -- OPC = "1110"  store      st_s   : in std_logic;   -- OPC = "1110"  store      st_s   : in std_logic;   -- OPC = "1110"  store      st_s   : in std_logic;   -- OPC = "1110"  store      st_s   : in std_logic;   -- OPC = "1110"  store      st_s   : in std_logic;   -- OPC = "1110"  storeype'image(state_reg)
       severity ERROR;
     ---------------------------------$$ 3 $$-----------------------------------------------------
     assert not (RFin = '1' and RFout = '1')
