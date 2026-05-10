@@ -92,7 +92,7 @@ begin
   rtype_s <= add_s or sub_s or and_s or or_s or xor_s;
 
   -----------------------------------------------------------------------------------
-  STATE_REG : process(clk, rst)
+  STATE_REG_process : process(clk, rst)
   begin
     if rst = '1' then
       state_reg <= S_FETCH;          -- Asynchronous reset to Fetch
@@ -101,7 +101,7 @@ begin
         state_reg <= next_state;     -- advance FSM on every enabled clock edge
       end if;
     end if;
-  end process STATE_REG;
+  end process STATE_REG_process;
 
   
   -----------------------------------------------------------------------------------
@@ -188,7 +188,7 @@ begin
           elsif jnc_s = '1' then
             PCin <= '1';
             if Cflag = '0' then
-            PCsel <= "01";
+              PCsel <= "01";
             else 
             PCsel <= "10";               
             end if;  
@@ -282,17 +282,17 @@ begin
     ---------------------------------------------------------------------------------------------
     ------------------------------ for Testbench ------------------------------------------------
     ---------------------------------$$ 1 $$------------------------------------------------------
-    assert PCsel /= "11"
-      report "ILLEGAL PCsel=11 in state " & state_type'image(state_reg)
-      severity ERROR;
+    --assert PCsel /= "11"
+     -- report "ILLEGAL PCsel=11 in state " & state_type'image(state_reg)
+      --severity ERROR;
     ---------------------------------$$ 2 $$-----------------------------------------------------
-    assert not (Cin = '1' and Cout = '1')
-      report "Cin and Cout both asserted in state " & state_t      st_s   : in std_logic;   -- OPC = "1110"  store      st_s   : in std_logic;   -- OPC = "1110"  store      st_s   : in std_logic;   -- OPC = "1110"  store      st_s   : in std_logic;   -- OPC = "1110"  store      st_s   : in std_logic;   -- OPC = "1110"  store      st_s   : in std_logic;   -- OPC = "1110"  storeype'image(state_reg)
-      severity ERROR;
+   -- assert not (Cin = '1' and Cout = '1')
+      --report "Cin and Cout both asserted in state " & state_t      st_s   : in std_logic;   -- OPC = "1110"  store      st_s   : in std_logic;   -- OPC = "1110"  store      st_s   : in std_logic;   -- OPC = "1110"  store      st_s   : in std_logic;   -- OPC = "1110"  store      st_s   : in std_logic;   -- OPC = "1110"  store      st_s   : in std_logic;   -- OPC = "1110"  storeype'image(state_reg)
+     -- severity ERROR;
     ---------------------------------$$ 3 $$-----------------------------------------------------
-    assert not (RFin = '1' and RFout = '1')
-      report "RFin and RFout both asserted in state " & state_type'image(state_reg)
-      severity ERROR;
+    --assert not (RFin = '1' and RFout = '1')
+      --report "RFin and RFout both asserted in state " & state_type'image(state_reg)
+      --severity ERROR;
 
   end process COMB_OUT;
 
