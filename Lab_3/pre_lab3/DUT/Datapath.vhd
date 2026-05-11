@@ -84,6 +84,7 @@ architecture rtl of Datapath is
   signal flag_C : std_logic := '0';
   signal flag_Z : std_logic := '0';
   signal flag_N : std_logic := '0';
+  signal is_rtype : std_logic;
 
   -- PC arithmetic --
   signal PC_plus1 : std_logic_vector(7 downto 0);
@@ -247,7 +248,7 @@ end process;
 PC_plus1 <= PC_reg + "00000001";
 
 PC_next <= (others => '0')                              when PCsel = "00" else
-           PC_reg + IR_reg(5 downto 0) + "00000001"    when PCsel = "01" else
+           PC_reg + IR_reg(5 downto 0) + "00000001"    when PCsel = "01" else  -- pcsel = 01 we are is jmp/jc/jnc instraction --
            PC_plus1;                                    -- PCsel = "10"
 
   -- RF Address MUX --
@@ -272,6 +273,13 @@ PC_next <= (others => '0')                              when PCsel = "00" else
   st_s   <= '1' when IR_reg(15 downto 12) = "1110" else '0';
   done_s <= '1' when IR_reg(15 downto 12) = "1111" else '0';
 
+    -- R-type detection: used to qualify ALU flag updates --
+  is_rtype <= '1' when (IR_reg(15 downto 12) = "0000" or   -- add
+                        IR_reg(15 downto 12) = "0001" or   -- sub
+                        IR_reg(15 downto 12) = "0010" or   -- and
+                        IR_reg(15 downto 12) = "0011" or   -- or
+                        IR_reg(15 downto 12) = "0100")     -- xor
+                 else '0';
 -----------------------------------------------------------------------------------
 
   -- Status flag outputs --
@@ -333,9 +341,11 @@ PC_next <= (others => '0')                              when PCsel = "00" else
   FLAG_PROC : process(clk, rst)
   begin
     if rst = '1' then
-      flag_C <= '0'; flag_Z <= '0'; flag_N <= '0';
+      flag_C <= '0';
+      flag_Z <= '0';
+      flag_N <= '0';
     elsif rising_edge(clk) then
-      if Cin = '1' then
+      if (Cin = '1') and (is_rtype = '1') then
         flag_C <= ALU_C;
         flag_Z <= ALU_Z;
         flag_N <= ALU_N;
