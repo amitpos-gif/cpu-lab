@@ -64,8 +64,8 @@ architecture struct of top is
 begin
 
   -------------------------------------------------------------------------
-  -- Control Unit Instantiation
-  -- (formal port name => internal wire in top)
+  --- Control Unit Instantiation --
+  --- (formal port name => internal wire in top) --
   -------------------------------------------------------------------------
   CU : Control
     port map (
