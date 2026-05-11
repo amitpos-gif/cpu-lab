@@ -22,7 +22,7 @@ generic( Dwidth: integer:=16;
   	Ain          : in std_logic;                        -- REG_A    ← BUS_wire  AND selects RFaddr_rd=rb
 	  RFin         : in std_logic;   
   	RFout        : in std_logic;    
-    RFaddr_rd	 : in std_logic_vector(1 downto 0);       --00 = off  , 01 = rc  , 10 = rb , 11= ra --
+    RFaddr_rd	 : in std_logic_vector(1 downto 0);       --00 = off  , 01 = rc  , 10 = rb , 11 = ra --
 	  RFaddr_wr	 : in std_logic;                          -- 0 = off  , 1 = wr from the data is ra --
     IRin         : in std_logic;                        -- ITCM_data -> to IR_reg
     PCin         : in std_logic;                        -- PC_next -> to PC_reg
@@ -144,6 +144,7 @@ end process;
   -- ITCM: always read from PC (CPU read-only during execution)
   ITCM_rd_addr <= PC_reg(5 downto 0);
 
+  --- this part is for alaberted in what case we take witch information ---
   -- DTCM: read/write source mux (TB takes priority when TBactive='1')
   DTCM_rd_addr <= DTCM_tb_addr_out when TBactive = '1' else DTCM_addr_reg;
   DTCM_wr_addr <= DTCM_tb_addr_in  when TBactive = '1' else DTCM_addr_reg;
@@ -187,10 +188,10 @@ end process;
     generic map (Dwidth => 16, Awidth => 6, dept => 64)
     port map (
       clk      => clk,
-      memEn    => DTCM_wr_en,
-      WmemData => DTCM_wr_data,
-      WmemAddr => DTCM_wr_addr,
-      RmemAddr => DTCM_rd_addr,
+      memEn    => DTCM_wr_en,   ---- DTCM_wr when we arent in tb uploding information ----
+      WmemData => DTCM_wr_data,  ---- the bus wire when we arent in tb uploding information ----
+      WmemAddr => DTCM_wr_addr,  ---- the DTCM_reg when we arent in tb uploding information -- and it is for store opc --
+      RmemAddr => DTCM_rd_addr,  ---- the DTCM_reg when we arent in tb uploding information -- and it is for loaded opc --
       RmemData => DTCM_data
     );
 
@@ -238,7 +239,7 @@ end process;
   ------------ PART 4 - COMBINATORIAL LOGIC ------------------------------------
 
   -- Sign Extension --
-  Imm1_sext <= (15 downto 8 => IR_reg(7)) & IR_reg(7 downto 0); -- 8-bit imm
+  Imm1_sext <= (15 downto 8 => IR_reg(7)) & IR_reg(7 downto 0); -- 8-bit imm  
   Imm2_sext <= (15 downto 4 => IR_reg(3)) & IR_reg(3 downto 0); -- 4-bit imm
   
   
@@ -246,13 +247,13 @@ end process;
 PC_plus1 <= PC_reg + "00000001";
 
 PC_next <= (others => '0')                              when PCsel = "00" else
-           PC_reg + IR_reg(7 downto 0) + "00000001"    when PCsel = "01" else
+           PC_reg + IR_reg(5 downto 0) + "00000001"    when PCsel = "01" else
            PC_plus1;                                    -- PCsel = "10"
 
   -- RF Address MUX --
   RF_read_addr <= IR_reg(3 downto 0)  when RFaddr_rd = "01" else  -- rc = IR[3:0]
-                  IR_reg(7 downto 4)  when RFaddr_rd = "10" else  -- rb = IR[7:4]  
-                  IR_reg(11 downto 8) when RFaddr_rd = "11" else  --ra = IR[11:8] --NEW!! 5\10 11:45
+                IR_reg(7 downto 4)  when RFaddr_rd = "10" else  -- rb = IR[7:4]
+                IR_reg(11 downto 8) when RFaddr_rd = "11" else  --ra = IR[11:8] --NEW!! 5\10 11:45
                 (others => '0');                                 -- "00" = off
 
   RF_write_addr <= IR_reg(11 downto 8)  when RFaddr_wr = '1' else (others => '0');
@@ -349,7 +350,7 @@ PC_next <= (others => '0')                              when PCsel = "00" else
       DTCM_addr_reg <= (others => '0');
     elsif rising_edge(clk) then
       if DTCM_addr_in = '1' then
-        DTCM_addr_reg <= BUS_wire(5 downto 0);
+        DTCM_addr_reg <= BUS_wire(Awidth-1 downto 0);
       end if;
     end if;
   end process;
