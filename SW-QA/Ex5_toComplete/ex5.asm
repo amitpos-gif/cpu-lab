@@ -20,12 +20,12 @@ jlo 3             ; if r9 < 1 -> even -> jump to SUB
 
 ; odd case: res[i] = arr1[i] + arr2[i]  r10 = res [i]
 add r10,r7,r8
-st  r10,0(r3)
+st r10,0(r3)
 jmp 2             ; skip SUB case
 
 ; even case: res[i] = arr1[i] - arr2[i]
 sub r10,r7,r8
-st  r10,0(r3)
+st r10,0(r3)
 
 add r1,r1,r5      ; arr1 pointer++
 add r2,r2,r5      ; arr2 pointer++

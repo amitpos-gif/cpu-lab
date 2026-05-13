@@ -1,5 +1,5 @@
 --==============================================================================
--- File         : lab_3_tb_top.vhd
+-- File         : lab_3_tb_top_ex2.vhd
 -- Description  : Testbench for the SRMC Multi-Cycle CPU `top` entity.
 --                ITCM and DTCM initial contents are HARDCODED as constant
 --                arrays (no input-file reading). Runs the program until the
@@ -22,12 +22,12 @@ use std.textio.all;                    -- text, line, writeline (output only)
 use work.aux_package.all;
 
 ------------------------------------------------------------------------------
-entity lab_3_tb_top is
+entity lab_3_tb_top_ex2 is
   -- No ports: top-level simulation entity.
-end entity lab_3_tb_top;
+end entity lab_3_tb_top_ex2;
 
 ------------------------------------------------------------------------------
-architecture sim of lab_3_tb_top is
+architecture sim of lab_3_tb_top_ex2 is
 
   ------------------------------------------------------------------------
   -- Constants
@@ -48,6 +48,7 @@ architecture sim of lab_3_tb_top is
 
   -- 16 instruction words, addresses 0..15
   constant ITCM_INIT : word_array_t := (
+    
     X"C100",   -- 00 :
     X"C20E",   -- 01 : 
     X"C31C",   -- 02 : 
