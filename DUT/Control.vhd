@@ -248,7 +248,7 @@ begin
           DTCM_addr_in <= '1';          -- DTCM_addr_reg ← BUS_wire[5:0]
 
           if ld_s = '1' then
-            next_state <= S_LD_WAIT;    -- Wait for DTCM registered output to settle
+            next_state <= S_LD_WAIT;    -- Wait for DTCM registered output to settle just for the ld op
           else
             next_state <= S_ST_EX3;
           end if;
