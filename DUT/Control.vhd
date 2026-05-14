@@ -76,7 +76,8 @@ architecture rtl of Control is
     S_MOV_EX,      -- Cycle 3 (mov)   : imm8 → RF[ra]
     S_LDST_EX1,    -- Cycle 3 (ld/st) : rb+imm4 → REG_C  (effective address)
     S_LDST_EX2,    -- Cycle 4 (ld/st) : REG_C → DTCM_addr_reg
-    S_LD_EX3,      -- Cycle 5 (ld)    : DTCM_data → RF[ra]
+    S_LD_WAIT,     -- Cycle 5 (ld)    : wait for DTCM registered output to settle
+    S_LD_EX3,      -- Cycle 6 (ld)    : DTCM_data → RF[ra]
     S_ST_EX3,      -- Cycle 5 (st)    : RF[ra] → DTCM
     S_DONE         -- terminal        : assert done, halt until rst
   );
@@ -247,14 +248,20 @@ begin
           DTCM_addr_in <= '1';          -- DTCM_addr_reg ← BUS_wire[5:0]
 
           if ld_s = '1' then
-            next_state <= S_LD_EX3;
+            next_state <= S_LD_WAIT;    -- Wait for DTCM registered output to settle
           else
             next_state <= S_ST_EX3;
           end if;
 
       
+        when S_LD_WAIT =>
+          -- Wait for DTCM registered output to settle after address was applied in S_LDST_EX2
+          -- Assert NO control signals in this state - just consume one clock cycle
+          next_state <= S_LD_EX3;
+
+      
         when S_LD_EX3 =>
-          DTCM_out   <= '1';            -- DTCM_data → BUS_wire
+          DTCM_out   <= '1';            -- DTCM_data → BUS_wire (now valid after one cycle)
           RFin       <= '1';            -- RF[IR[11:8]] = RF[ra] ← BUS_wire
           RFaddr_wr  <= '1';
           PCin       <= '1';

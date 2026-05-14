@@ -17,10 +17,10 @@ use std.textio.all;
 
 use work.aux_package.all;
 
-entity lab_3_tb_top_ex5 is
+entity lab_3_tb_top_ex3 is
 end entity;
 
-architecture sim of lab_3_tb_top_ex5 is
+architecture sim of lab_3_tb_top_ex3 is
 
   constant Dwidth      : integer := 16;
   constant Awidth      : integer := 6;
@@ -41,35 +41,29 @@ architecture sim of lab_3_tb_top_ex5 is
   X"C60E", -- 05
   X"D710", -- 06
   X"D820", -- 07
-  X"2945", -- 08: and r9,r4,r5
-  X"1B95", -- 09: sub r11,r9,r5
-  X"9003", -- 10: jlo 3
-  X"0A78", -- 11: add r10,r7,r8
-  X"EA30", -- 12: st r10,0(r3)
-  X"7002", -- 13: jmp 2
-  X"1A78", -- 14: sub r10,r7,r8
-  X"EA30", -- 15: st r10,0(r3)
-  X"0115", -- 16
-  X"0225", -- 17
-  X"0335", -- 18
-  X"0445", -- 19
-  X"1A46", -- 20
-  X"90F0", -- 21
-  X"F000", -- 22
-  X"0000", -- 23
-  X"70FE"  -- 24
+  X"1978", -- 08: sub r9,r7,r8
+  X"E930", -- 09
+  X"0115", -- 10
+  X"0225", -- 11
+  X"0335", -- 12
+  X"0445", -- 13
+  X"1A46", -- 14
+  X"90F6", -- 15
+  X"F000", -- 16
+  X"0000", -- 17
+  X"70FE"  -- 18
 );
 
   constant DTCM_INIT : word_array_t := (
-  X"003F", X"021E", X"00F5", X"00BE", X"005B", X"0056", X"004E",
-  X"0040", X"0053", X"0010", X"0018", X"003E", X"004F", X"0013",
+    X"0000", X"0001", X"0002", X"0003", X"0004", X"0005", X"0006",
+    X"0007", X"0008", X"0009", X"000A", X"000B", X"000C", X"000D",
 
-  X"000D", X"0138", X"008D", X"00A0", X"005C", X"0058", X"0047",
-  X"003F", X"003B", X"000E", X"002B", X"000C", X"0047", X"005A",
+    X"0000", X"0001", X"0002", X"0003", X"0004", X"0005", X"0006",
+    X"0007", X"0008", X"0009", X"000A", X"000B", X"000C", X"000D",
 
-  X"0000", X"0000", X"0000", X"0000", X"0000", X"0000", X"0000",
-  X"0000", X"0000", X"0000", X"0000", X"0000", X"0000", X"0000"
-);
+    X"0000", X"0000", X"0000", X"0000", X"0000", X"0000", X"0000",
+    X"0000", X"0000", X"0000", X"0000", X"0000", X"0000", X"0000"
+  );
 
   signal clk              : std_logic := '0';
   signal rst              : std_logic := '1';

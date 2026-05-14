@@ -193,6 +193,28 @@ component alu is
     );
 end component;
 -------------------------------------------------------------------------------
-
+component top is
+  generic ( Dwidth : integer := 16;
+            Awidth : integer := 6;
+            dept   : integer := 64 );
+  port (
+    clk  : in  std_logic;
+    rst  : in  std_logic;
+    ena  : in  std_logic;
+    -- Testbench memory access (Figure 1 - "green line" ports) --
+    TBactive         : in  std_logic;
+    ITCM_tb_wr       : in  std_logic;
+    ITCM_tb_in       : in  std_logic_vector(Dwidth-1 downto 0);
+    ITCM_tb_addr_in  : in  std_logic_vector(Awidth-1 downto 0);
+    DTCM_tb_wr       : in  std_logic;
+    DTCM_tb_in       : in  std_logic_vector(Dwidth-1 downto 0);
+    DTCM_tb_out      : out std_logic_vector(Dwidth-1 downto 0);
+    DTCM_tb_addr_in  : in  std_logic_vector(Awidth-1 downto 0);
+    DTCM_tb_addr_out : in  std_logic_vector(Awidth-1 downto 0);
+    -- Done flag -> Testbench
+    done             : out std_logic
+  );
+end component;
+-------------------------------------------------------------------------------
 end aux_package;
 ------------------------------------------------------------------------
