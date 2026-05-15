@@ -56,7 +56,7 @@ architecture struct of top is
   -------------------------------------------------------------------------
   -- Internal wires: DATAPATH -> CONTROL (15 status signals)
   -------------------------------------------------------------------------
-  signal w_ld_s, w_st_s, w_mov_s, w_done_s            : std_logic;
+  signal w_ld_s, w_st_s, w_mov_s, w_done_s            : std_logic; --real time  --j_real time
   signal w_add_s, w_sub_s, w_jmp_s, w_jc_s, w_jnc_s   : std_logic;
   signal w_and_s, w_or_s, w_xor_s                     : std_logic;
   signal w_Cflag, w_Zflag, w_Nflag                    : std_logic;
@@ -72,7 +72,7 @@ begin
       clk          => clk,
       rst          => rst,
       ena          => ena,
-      -- Status FROM Datapath (inputs to Control)
+      -- Status FROM Datapath (inputs to Control) --real time
       mov_s        => w_mov_s,
       done_s       => w_done_s,
       and_s        => w_and_s,
@@ -134,7 +134,7 @@ begin
       PCsel            => w_PCsel,
       Imm1_in          => w_Imm1_in,
       Imm2_in          => w_Imm2_in,
-      -- Status outputs (TO CU)
+      -- Status outputs (TO CU) --real time  --j_real time
       mov_s            => w_mov_s,
       done_s           => w_done_s,
       and_s            => w_and_s,

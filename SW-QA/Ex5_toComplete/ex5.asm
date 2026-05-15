@@ -33,7 +33,7 @@ add r3,r3,r5      ; res pointer++
 add r4,r4,r5      ; i++
 
 sub r10,r4,r6     ; compare i with 14
-jlo -15           ; if i < 14, go back to ld r7,0(r1)
+jlo -16           ; if i < 14, go back to ld r7,0(r1)
 
 done
 nop

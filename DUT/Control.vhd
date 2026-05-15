@@ -18,7 +18,7 @@ entity Control is
     clk  : in std_logic;
     rst  : in std_logic;   -- synchronous reset → returns FSM to S_FETCH
     ena  : in std_logic;   -- clock enable  ('0' = freeze FSM)
---  input's from the datapath -------------------------
+--  input's from the datapath ------------------------- --real time  --j_real time
 	  mov_s  : in std_logic;   -- OPC = "1100"  move immediate
     done_s : in std_logic;   -- OPC = "1111"  program done
 	  and_s  : in std_logic;   -- OPC = "0010"  bitwise AND
@@ -90,7 +90,7 @@ architecture rtl of Control is
 
 begin
 
-  rtype_s <= add_s or sub_s or and_s or or_s or xor_s;
+  rtype_s <= add_s or sub_s or and_s or or_s or xor_s; --real time
 
   -----------------------------------------------------------------------------------
   STATE_REG_process : process(clk, rst)
@@ -106,7 +106,7 @@ begin
 
   
   -----------------------------------------------------------------------------------
-  COMB_OUT : process(state_reg, rst,
+  COMB_OUT : process(state_reg, rst,             --real time
                      ld_s, st_s, mov_s, done_s,
                      add_s, sub_s, and_s, or_s, xor_s, rtype_s,
                      jmp_s, jc_s, jnc_s,
@@ -179,6 +179,7 @@ begin
             PCin <= '1'; 
             if Cflag = '1' then
               PCsel <= "01";   --+1+addres
+              --j_real time elsif jzero = '1' if zflag = 1 pc sel 01
             else 
               PCsel <= "10";   --+1
             end if; 
@@ -217,7 +218,7 @@ begin
           Cin   <= '1';                 -- REG_C ← ALU_result; flags latched
           RFaddr_rd <= "10";            -- reading the data of the other adrees register --
           
-          -- Select ALU operation from OPCss
+          -- Select ALU operation from OPCss    --real time
           if    add_s = '1' then ALUFN <= "0000";   -- ADD
           elsif sub_s = '1' then ALUFN <= "0001";   -- SUB
           elsif and_s = '1' then ALUFN <= "0010";   -- AND
@@ -247,7 +248,7 @@ begin
           Cout         <= '1';          -- eff_addr on BUS_wire
           DTCM_addr_in <= '1';          -- DTCM_addr_reg ← BUS_wire[5:0]
 
-          if ld_s = '1' then
+          if ld_s = '1' then      --because its ld & st here
             next_state <= S_LD_WAIT;    -- Wait for DTCM registered output to settle just for the ld op
           else
             next_state <= S_ST_EX3;

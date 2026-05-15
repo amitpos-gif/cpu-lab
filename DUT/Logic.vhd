@@ -18,5 +18,6 @@ begin
 	              y_logic or x_logic when   "0011",
 				  y_logic and x_logic when  "0010",
 				  y_logic xor x_logic when  "0100",
+				  --add here another opp
 				  (others => '0') when others;
-end logic_dtf;
+			end logic_dtf;

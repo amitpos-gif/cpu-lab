@@ -29,7 +29,7 @@ generic( Dwidth: integer:=16;
     PCsel        : in std_logic_vector(1 downto 0);    -- '00'= "000000"  , '01'=PC+1+offset (jump target)  , "10" = PC+1 --
     Imm1_in      : in std_logic;                        -- SignExt(IR[7:0])→ BUS_wire  (8-bit imm)
     Imm2_in      : in std_logic;                        -- SignExt(IR[3:0])→ BUS_wire  (4-bit imm)
-    -- Status to CU (15 bits) --
+    -- Status to CU (15 bits) -- --real time   --j_real time
     mov_s  : out std_logic;   -- OPC = "1100"  move immediate
     done_s : out std_logic;   -- OPC = "1111"  program done
 	  and_s  : out std_logic;   -- OPC = "0010"  bitwise AND
@@ -259,7 +259,7 @@ PC_next <= (others => '0')                              when PCsel = "00" else
 
   RF_write_addr <= IR_reg(11 downto 8)  when RFaddr_wr = '1' else (others => '0');
 
-  -- OPC Decoder (status flags to Control Unit) --
+  -- OPC Decoder (status flags to Control Unit) -- --real time --j_real time
   add_s  <= '1' when IR_reg(15 downto 12) = "0000" else '0';
   sub_s  <= '1' when IR_reg(15 downto 12) = "0001" else '0';
   and_s  <= '1' when IR_reg(15 downto 12) = "0010" else '0';
@@ -273,7 +273,7 @@ PC_next <= (others => '0')                              when PCsel = "00" else
   st_s   <= '1' when IR_reg(15 downto 12) = "1110" else '0';
   done_s <= '1' when IR_reg(15 downto 12) = "1111" else '0';
 
-    -- R-type detection: used to qualify ALU flag updates --
+    -- R-type detection: used to qualify ALU flag updates -- --real time
   is_rtype <= '1' when (IR_reg(15 downto 12) = "0000" or   -- add
                         IR_reg(15 downto 12) = "0001" or   -- sub
                         IR_reg(15 downto 12) = "0010" or   -- and
@@ -345,7 +345,7 @@ PC_next <= (others => '0')                              when PCsel = "00" else
       flag_Z <= '0';
       flag_N <= '0';
     elsif rising_edge(clk) then
-      if (Cin = '1') and (is_rtype = '1') then
+      if (Cin = '1') and (is_rtype = '1') then        --change val only rising edge & r type op
         flag_C <= ALU_C;
         flag_Z <= ALU_Z;
         flag_N <= ALU_N;

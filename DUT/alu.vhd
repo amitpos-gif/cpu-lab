@@ -23,7 +23,7 @@ architecture dtf_alu of alu is
     signal alu_result : std_logic_vector(n-1 downto 0);  -- Internal ALU result
 	signal alufn_int : std_logic_vector(3 downto 0);-- aluf internal
 begin -- orgenize the inputs
-alufn_int <= alufn;
+alufn_int <= alufn; --real time change here lines 29 + 30
 x_adder_inp   <= A when (alufn_int = "0001" or alufn_int = "0000") else (others => '0'); -- the input will be as original for 0000/0001
 y_adder_inp   <= B when (alufn_int = "0001" or alufn_int = "0000") else (others => '0'); -- the input will be as original for 0000/0001                for all the cases if alufn not match input will be vector of '0'
 x_logic_inp <= A when (alufn_int = "0010" or alufn_int = "0011" or alufn_int = "0100") else (others => '0'); -- the input will be as original for 0010/0011/0100
@@ -48,7 +48,7 @@ logic_unit: logic
 	logic_out => out_logic
 		);
 
-with alufn select
+with alufn select --real time
 		alu_result <= out_adder when "0001" | "0000",    -- choosing what will be the output
      	              out_logic when "0010" | "0011"| "0100",
 		        (others => '0') when others;
@@ -58,7 +58,7 @@ with alufn select
             C_flag <= cout_adder when "0001" | "0000",
                              '0' when others;
 
-with alufn select
+with alufn select --real time 
 			N_flag <=   out_adder(n-1) when "0001" | "0000",    -- choosing what will be the n flag
 				    	out_logic(n-1) when "0010" | "0011"| "0100",
 						'0' when others;
