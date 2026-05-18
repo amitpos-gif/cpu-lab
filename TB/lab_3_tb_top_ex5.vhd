@@ -1,6 +1,6 @@
 --==============================================================================
 -- Testbench for Example 1
--- Loads ITCM/DTCM, runs CPU, dumps DTCM to file.
+-- Loads ITCM/DTCM from text files, runs CPU, dumps DTCM to file.
 -- No component declaration.
 -- No DTCM_EXPECTED.
 -- No assert checks.
@@ -28,48 +28,16 @@ architecture sim of lab_3_tb_top_ex5 is
   constant CLK_PERIOD  : time    := 20 ns;
   constant RUN_TIMEOUT : time    := 50 us;
 
+  -- Input init files (one 16-bit hex word per line)
+  -- NOTE: use forward slashes, even on Windows.
+  -- Either keep these as plain filenames AND copy the files into ModelSim's
+  -- working directory (type `pwd` in the transcript to see where that is),
+  -- or use a full absolute path like below.
+  constant ITCM_IN_FILE  : string := "C:\Users\123\Desktop\lab_arc\lab_3\SW-QA\Ex5_toComplete\bin\ITCMinit.txt";
+  constant DTCM_IN_FILE  : string := "C:\Users\123\Desktop\lab_arc\lab_3\SW-QA\Ex5_toComplete\bin\DTCMinit.txt";
+
+  -- Output dump file
   constant DTCM_OUT_FILE : string := "DTCMout_ex1.txt";
-
-  type word_array_t is array (natural range <>) of std_logic_vector(Dwidth-1 downto 0);
-
-  constant ITCM_INIT : word_array_t := (
-  X"C100", -- 00
-  X"C20E", -- 01
-  X"C31C", -- 02
-  X"C400", -- 03
-  X"C501", -- 04
-  X"C60E", -- 05
-  X"D710", -- 06
-  X"D820", -- 07
-  X"2945", -- 08: and r9,r4,r5
-  X"1B95", -- 09: sub r11,r9,r5
-  X"9003", -- 10: jlo 3
-  X"0A78", -- 11: add r10,r7,r8
-  X"EA30", -- 12: st r10,0(r3)
-  X"7002", -- 13: jmp 2
-  X"1A78", -- 14: sub r10,r7,r8
-  X"EA30", -- 15: st r10,0(r3)
-  X"0115", -- 16
-  X"0225", -- 17
-  X"0335", -- 18
-  X"0445", -- 19
-  X"1A46", -- 20
-  X"90F0", -- 21
-  X"F000", -- 22
-  X"0000", -- 23
-  X"70FE"  -- 24
-);
-
-  constant DTCM_INIT : word_array_t := (
-  X"003F", X"021E", X"00F5", X"00BE", X"005B", X"0056", X"004E",
-  X"0040", X"0053", X"0010", X"0018", X"003E", X"004F", X"0013",
-
-  X"000D", X"0138", X"008D", X"00A0", X"005C", X"0058", X"0047",
-  X"003F", X"003B", X"000E", X"002B", X"000C", X"0047", X"005A",
-
-  X"0000", X"0000", X"0000", X"0000", X"0000", X"0000", X"0000",
-  X"0000", X"0000", X"0000", X"0000", X"0000", X"0000", X"0000"
-);
 
   signal clk              : std_logic := '0';
   signal rst              : std_logic := '1';
@@ -125,8 +93,13 @@ begin
   end process;
 
   stim_process : process
-    file out_file : text open write_mode is DTCM_OUT_FILE;
-    variable Lout : line;
+    file out_file  : text open write_mode is DTCM_OUT_FILE;
+    file itcm_file : text open read_mode  is ITCM_IN_FILE;
+    file dtcm_file : text open read_mode  is DTCM_IN_FILE;
+    variable Lout  : line;
+    variable Lin   : line;
+    variable word_v : std_logic_vector(Dwidth-1 downto 0);
+    variable addr_i : integer;
   begin
 
     rst      <= '1';
@@ -136,31 +109,64 @@ begin
     wait until rising_edge(clk);
     wait until rising_edge(clk);
 
-    -- Load ITCM
+    -- ---------------------------------------------------------------
+    -- Load ITCM from file
+    -- ---------------------------------------------------------------
     ITCM_tb_wr <= '1';
+    addr_i := 0;
 
-    for i in ITCM_INIT'range loop
-      ITCM_tb_in      <= ITCM_INIT(i);
-      ITCM_tb_addr_in <= conv_std_logic_vector(i, Awidth);
+    while not endfile(itcm_file) loop
+      readline(itcm_file, Lin);
+      -- skip blank/empty lines safely (Lin is access string)
+      if Lin = null then
+        next;
+      end if;
+      if Lin.all'length = 0 then
+        next;
+      end if;
+
+      hread(Lin, word_v);
+
+      ITCM_tb_in      <= word_v;
+      ITCM_tb_addr_in <= conv_std_logic_vector(addr_i, Awidth);
       wait until rising_edge(clk);
       wait until falling_edge(clk);
+
+      addr_i := addr_i + 1;
     end loop;
 
     ITCM_tb_wr <= '0';
 
-    -- Load DTCM
+    -- ---------------------------------------------------------------
+    -- Load DTCM from file
+    -- ---------------------------------------------------------------
     DTCM_tb_wr <= '1';
+    addr_i := 0;
 
-    for i in DTCM_INIT'range loop
-      DTCM_tb_in      <= DTCM_INIT(i);
-      DTCM_tb_addr_in <= conv_std_logic_vector(i, Awidth);
+    while not endfile(dtcm_file) loop
+      readline(dtcm_file, Lin);
+      if Lin = null then
+        next;
+      end if;
+      if Lin.all'length = 0 then
+        next;
+      end if;
+
+      hread(Lin, word_v);
+
+      DTCM_tb_in      <= word_v;
+      DTCM_tb_addr_in <= conv_std_logic_vector(addr_i, Awidth);
       wait until rising_edge(clk);
       wait until falling_edge(clk);
+
+      addr_i := addr_i + 1;
     end loop;
 
     DTCM_tb_wr <= '0';
 
+    -- ---------------------------------------------------------------
     -- Run CPU
+    -- ---------------------------------------------------------------
     TBactive <= '0';
     rst      <= '0';
     ena      <= '1';
@@ -169,7 +175,9 @@ begin
 
     wait until (done = '1') for RUN_TIMEOUT;
 
+    -- ---------------------------------------------------------------
     -- Dump DTCM
+    -- ---------------------------------------------------------------
     ena      <= '0';
     TBactive <= '1';
 
@@ -188,6 +196,8 @@ begin
     end loop;
 
     file_close(out_file);
+    file_close(itcm_file);
+    file_close(dtcm_file);
 
     sim_done <= true;
     wait for 2 * CLK_PERIOD;
