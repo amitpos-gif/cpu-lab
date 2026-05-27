@@ -4,22 +4,22 @@ use ieee.std_logic_arith.all;
 use ieee.std_logic_unsigned.all;
 USE work.aux_package.all;
 ------------------------------------
-entity pwm_outpot_unit is
+entity pwm_output_unit is
       GENERIC (n : INTEGER := 16
     ); 
   PORT 
   (
     x_i      : in std_logic_vector (n-1 downto 0);  --- a for the second layer  ---
     y_i      : IN STD_LOGIC_VECTOR(n-1 DOWNTO 0);
-    ALUFN_i  : IN std_logic_vector(2 downto 0);
+    ALUFN_i  : IN std_logic_vector(1 downto 0);
     ena_i    : in std_logic;
     clk_i    : in  std_logic;
     rst_i    : in  std_logic;
-    pwmout_o : out  std_logic );
+    pwmout_o : out std_logic );
 
-END entity pwm_outpot_unit;
+END entity pwm_output_unit;
 -----------------------------------s-----------------------------
-architecture struct of pwm_outpot_unit is
+architecture struct of pwm_output_unit is
     signal timer_q : std_logic_vector(n-1 downto 0);
     signal equy_i : std_logic;
 begin    

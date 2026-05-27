@@ -13,7 +13,7 @@ ENTITY digit_circ is
 		  timer_i       : IN  STD_LOGIC_VECTOR(n-1 DOWNTO 0);
           ena_i         : in  STD_LOGIC;
           clk_i         : in  std_logic;
-          pwm_mode_i    : in std_logic_vector(2 downto 0);
+          pwm_mode_i    : in std_logic_vector(1 downto 0);
           pwm_out       : out std_logic;
           equy_out      : out std_logic
           
@@ -37,14 +37,14 @@ begin
                 if (ena_i = '1') then
                     case pwm_mode_i is
                         --mode 0 -> x is responsible for the '0'
-                        when "000" => 
+                        when "00" => 
                             if (equy_w ='1') then
                                 pwm_out_w <= '0';
                             elsif timer_i = x_i then
                                 pwm_out_w <= '1';
                             end if;
                             --mode 1
-                        when "001" => 
+                        when "01" => 
                             if (equy_w ='1') then
                                 pwm_out_w <= '1';
                             elsif timer_i = x_i then
@@ -52,7 +52,7 @@ begin
                             end if; 
 
                         --mode2
-                        when "010" => 
+                        when "10" => 
                             if timer_i = X_i then 
                                 pwm_out_w <= not pwm_out_w;
                             end if;

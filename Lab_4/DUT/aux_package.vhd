@@ -105,7 +105,7 @@ component digit_circ is
 		      timer_i       : IN  STD_LOGIC_VECTOR(n-1 DOWNTO 0);
           ena_i         : in  STD_LOGIC;
           clk_i         : in  std_logic;
-          pwm_mode_i    : in std_logic_vector(2 downto 0);
+          pwm_mode_i    : in std_logic_vector(1 downto 0);
           pwm_out       : out std_logic;
           equy_out      : out std_logic
           
@@ -115,14 +115,14 @@ END component;
 
 -----------------------------------------------------------
 
-component pwm_outpot_unit is
+component pwm_output_unit is
       GENERIC (n : INTEGER := 16
     ); 
   PORT 
   (
     x_i      : in std_logic_vector (n-1 downto 0);  --- t for top ---
     y_i      : IN  STD_LOGIC_VECTOR(n-1 DOWNTO 0);
-    ALUFN_i  : IN std_logic_vector(2 downto 0);
+    ALUFN_i  : IN std_logic_vector(1 downto 0);
     ena_i    : in std_logic;
     clk_i    : in  std_logic;
     rst_i    : in  std_logic;
@@ -185,7 +185,7 @@ component PLL is
 end component;
 
 ----------------------------------------------------------
-component system_top_entity is
+component digital_system is
     generic ( n : integer := 16;
               k : integer := 4 );
     port (  Y_i      : in std_logic_vector (n-1 downto 0);

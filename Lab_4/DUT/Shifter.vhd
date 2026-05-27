@@ -7,7 +7,7 @@ ENTITY shifter IS
     PORT (
         y     : IN  STD_LOGIC_VECTOR(n-1 DOWNTO 0);  -- data to shift
         x     : IN  STD_LOGIC_VECTOR(k-1 DOWNTO 0);  -- shift amount (from X(k-1..0))
-        alufn : IN  STD_LOGIC_VECTOR(3 DOWNTO 0);    -- alufn(0) = dir: '0'=SHL, '1'=SHR
+        alufn : IN  STD_LOGIC_VECTOR(2 DOWNTO 0);    -- alufn(0) = dir: '0'=SHL, '1'=SHR
         res   : OUT STD_LOGIC_VECTOR(n-1 DOWNTO 0);  -- shifted result
         cout  : OUT STD_LOGIC                         -- carry out
     );

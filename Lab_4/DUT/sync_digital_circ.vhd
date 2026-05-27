@@ -27,12 +27,12 @@ begin
     pwm_x <= x_i WHEN ALUFN_i(4 DOWNTO 3) = "00" ELSE (OTHERS => '0');
     pwm_enable <= ena_i when ALUFN_i(4 DOWNTO 3) = "00" ELSE '0';
 
-    PWM_OUTPOT_UNIT_INST : pwm_outpot_unit
+    PWM_OUTPOT_UNIT_INST : pwm_output_unit
         GENERIC MAP (n => n)
         PORT MAP (
             x_i => pwm_x,
             y_i => pwm_y,
-            ALUFN_i => ALUFN_i(2 downto 0), --- this is the mode of the pwm_outpot_unit ---
+            ALUFN_i => ALUFN_i(1 downto 0), --- this is the mode of the pwm_outpot_unit ---
             ena_i => pwm_enable,
             clk_i => clk_i,
             rst_i => rst_i,
