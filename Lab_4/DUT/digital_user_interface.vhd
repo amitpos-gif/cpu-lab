@@ -51,33 +51,48 @@ architecture rtl of digital_user_interface is
     signal c_flag       : std_logic;
     signal z_flag       : std_logic;
     signal v_flag       : std_logic;
+    --KEYS
+    signal key0_pressed : std_logic;
+    signal key1_pressed : std_logic;
+    signal key2_pressed : std_logic;
+    signal key3_pressed : std_logic;
 
     -- PWM 
---the mode is form ALUfn in digital sytem file.   
-begin    
-    process(sw,KEY) --this process is responsible for the lines outside of digit system
+--the mode is form ALUfn in digital sytem file.
+        --KEYS
+        -- pressed     = '0' at the physical KEY input
+        -- not pressed = '1' at the physical KEY input
+        -- Internally, keyX_pressed = '1' means the button is pressed.
+    begin
+            key0_pressed <= not KEY(0);
+            key1_pressed <= not KEY(1);
+            key2_pressed <= not KEY(2);
+            key3_pressed <= not KEY(3);  
+    
+    process(sw,key0_pressed,key1_pressed,key2_pressed,key3_pressed) --this process is responsible for the lines outside of digit system
         begin
-        --term on key 0
-        if KEY(0)= '1' and sw(9) ='0' then
-            reg_y_low <= sw(7 downto 0);
-        elsif KEY(0)= '1' and sw(9) ='1' then
-            reg_y_high <= sw(7 downto 0);
+
+        --term on key 0 when pushed the button is '0'
+        if key0_pressed = '1' and SW(9) = '0' then
+            reg_y_low <= SW(7 downto 0);
+        elsif key0_pressed = '1' and SW(9) = '1' then
+            reg_y_high <= SW(7 downto 0);
         end if;
         --term on key 1
-        if KEY(1)= '1' and sw(9) ='0' then
-            reg_x_low <= sw(7 downto 0);
-        elsif KEY(1)= '1' and sw(9) ='1' then
-            reg_x_high <= sw(7 downto 0);
+        if key1_pressed = '1' and SW(9) = '0' then
+            reg_x_low <= SW(7 downto 0);
+        elsif key1_pressed = '1' and SW(9) = '1' then
+            reg_x_high <= SW(7 downto 0);
         end if;
         --term on key 2
-        if key(2) ='1' then
-            reg_alufn <= sw(7 downto 0);
+        if key2_pressed = '1' then
+            reg_alufn <= SW(7 downto 0);
         end if;
         
     end process;
    -- HEX raw 4-bit values
-    hex10_data <= reg_y_low when SW(9) = '0' else reg_y_high;
-    hex32_data <= reg_x_low when SW(9) = '0' else reg_x_high;
+    hex10_data <= reg_x_low when SW(9) = '0' else reg_x_high;
+    hex32_data <= reg_y_low when SW(9) = '0' else reg_y_high;
 
     HEX0 <= hex10_data(3 downto 0);
     HEX1 <= hex10_data(7 downto 4);
@@ -91,7 +106,7 @@ begin
     y_alu <= reg_y_high & reg_y_low;
     x_alu <= reg_x_high & reg_x_low;
     ena_i <= '1' when sw(8)  = '1' else '0';
-    rst_i <= '1' when key(3) = '1' else '0';
+    rst_i <= '1' when key3_pressed = '1' else '0';
         --PLL wires
     U_PLL : PLL
     port map (
