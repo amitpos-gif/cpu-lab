@@ -17,7 +17,7 @@ entity bit_Timer is
 end entity bit_Timer;
 ---------------------------------------------------------  
 architecture rtl of bit_Timer is
-    signal count_q : std_logic_vector (n-1 downto 0):=x"0000";
+    signal count_q : std_logic_vector (n-1 downto 0):= (others => '0'); 
 begin
     process (clk,rst)
     begin

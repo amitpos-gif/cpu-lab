@@ -13,12 +13,12 @@ entity digital_user_interface is
         KEY      : in  std_logic_vector(3 downto 0);
 
         LEDR     : out std_logic_vector(9 downto 0);
-        HEX0     : out std_logic_vector(3 downto 0);
-        HEX1     : out std_logic_vector(3 downto 0);
-        HEX2     : out std_logic_vector(3 downto 0);
-        HEX3     : out std_logic_vector(3 downto 0);
-        HEX4     : out std_logic_vector(3 downto 0);
-        HEX5     : out std_logic_vector(3 downto 0);
+        HEX0    : out std_logic_vector(6 downto 0);  -- was (3 downto 0)
+        HEX1    : out std_logic_vector(6 downto 0);
+        HEX2    : out std_logic_vector(6 downto 0);
+        HEX3    : out std_logic_vector(6 downto 0);
+        HEX4    : out std_logic_vector(6 downto 0);
+        HEX5    : out std_logic_vector(6 downto 0);
 
         pwm_out     : out std_logic
     );
@@ -41,10 +41,10 @@ architecture rtl of digital_user_interface is
     signal rst_i      : std_logic;
     signal ena_i      : std_logic;
     --  ALU comp
-    signal y_alu        : std_logic_vector(n-1 downto 0);
-    signal x_alu        : std_logic_vector(n-1 downto 0);
+    signal y_i        : std_logic_vector(n-1 downto 0);
+    signal x_i        : std_logic_vector(n-1 downto 0);
     signal alufn_alu    : std_logic_vector(4 downto 0);
-    signal alu_out      : std_logic_vector(n-1 downto 0);
+    signal alu_out      : std_logic_vector(7 downto 0);
 
     -- flags
     signal n_flag       : std_logic;
@@ -90,21 +90,21 @@ architecture rtl of digital_user_interface is
         end if;
         
     end process;
-   -- HEX raw 4-bit values
+   -- HEX raw 7-bit values
     hex10_data <= reg_x_low when SW(9) = '0' else reg_x_high;
     hex32_data <= reg_y_low when SW(9) = '0' else reg_y_high;
 
-    HEX0 <= hex10_data(3 downto 0);
-    HEX1 <= hex10_data(7 downto 4);
+    HEX0 <= hex_to_7seg(hex10_data(3 downto 0));
+    HEX1 <= hex_to_7seg(hex10_data(7 downto 4));
 
-    HEX2 <= hex32_data(3 downto 0);
-    HEX3 <= hex32_data(7 downto 4);
+    HEX2 <= hex_to_7seg(hex32_data(3 downto 0));
+    HEX3 <= hex_to_7seg(hex32_data(7 downto 4));
 
         
     --from here start to set the digital system wires
     alufn_alu <=reg_alufn(4 downto 0);
-    y_alu <= reg_y_high & reg_y_low;
-    x_alu <= reg_x_high & reg_x_low;
+    y_i <= reg_y_high & reg_y_low;
+    x_i <= reg_x_high & reg_x_low;
     ena_i <= '1' when sw(8)  = '1' else '0';
     rst_i <= '1' when key3_pressed = '1' else '0';
         --PLL wires
@@ -123,8 +123,8 @@ architecture rtl of digital_user_interface is
             k => k
         )
         port map (
-            Y_i      => y_alu,
-            X_i      => x_alu,
+            Y_i      => y_i,
+            X_i      => x_i,
             clk_i    => clk_pll,
             ena_i    => ena_i,
             rst_i    => rst_i,
@@ -139,14 +139,14 @@ architecture rtl of digital_user_interface is
             pwm_o    => pwm_out
         );    
             -- ALU result to HEX5-HEX4
-    HEX4 <= alu_out(3 downto 0);
-    HEX5 <= alu_out(7 downto 4);
+    HEX4 <= hex_to_7seg(alu_out(3 downto 0));
+    HEX5 <= hex_to_7seg(alu_out(7 downto 4));
     -- LEDs for ALUFN and flags
     LEDR(9 downto 5) <= reg_alufn(4 downto 0);
     LEDR(4) <= '0'; -- off this led
-    LEDR(3) <= n_flag;
-    LEDR(2) <= c_flag;
-    LEDR(1) <= z_flag;
-    LEDR(0) <= v_flag;
+    -- only show flags when not in PWM mode (ALUFN[4:3] != "00")
+    LEDR(3) <= n_flag when alufn_alu(4 downto 3) /= "00" else '0';
+    LEDR(2) <= c_flag when alufn_alu(4 downto 3) /= "00" else '0';
+    LEDR(1) <= z_flag when alufn_alu(4 downto 3) /= "00" else '0';
+    LEDR(0) <= v_flag when alufn_alu(4 downto 3) /= "00" else '0';
 end architecture;
-

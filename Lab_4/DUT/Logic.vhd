@@ -1,13 +1,13 @@
 lIBRARY ieee;
 USE ieee.std_logic_1164.all;
 
-entity logic is 
-	generic (n : integer :=8); 
+entity Logic is 
+	generic (n : integer :=16); 
 	port ( x, y : in std_logic_vector (n-1 downto 0) ;
 	alufn : in std_logic_vector (2 downto 0); 
 	z : out std_logic_vector (n-1 downto 0) ); 
 	
-end logic ;
+end Logic ;
 
 ARCHITECTURE dataflow of logic is
 	begin

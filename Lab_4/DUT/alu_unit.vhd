@@ -5,8 +5,8 @@ use ieee.std_logic_unsigned.all;
 USE work.aux_package.all;
 -------------------------------------
 entity alu_unit is 
-	generic ( n : INTEGER := 16;
-			  k : INTEGER := 4 );
+	generic ( n : INTEGER := 8;
+			  k : INTEGER := 3 );
 		  
 	port (  Y_i      : in std_logic_vector (n-1 downto 0);
 			X_i      : in std_logic_vector (n-1 downto 0);
