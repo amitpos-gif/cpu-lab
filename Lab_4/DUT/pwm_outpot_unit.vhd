@@ -22,7 +22,32 @@ END entity pwm_output_unit;
 architecture struct of pwm_output_unit is
     signal timer_q : std_logic_vector(n-1 downto 0);
     signal equy_i : std_logic;
+    signal x_prev          : std_logic_vector(n-1 downto 0) := (others => '0');
+    signal y_prev          : std_logic_vector(n-1 downto 0) := (others => '0');
+    signal xy_changed_w : std_logic;
+    signal timer_rst_w  : std_logic;
+
 begin    
+
+            -- Detect change in X or Y immediately
+        xy_changed_w <= '1' when (x_i /= x_prev) or (y_i /= y_prev) else '0';
+
+        -- Reset for the timer only
+        timer_rst_w <= rst_i or xy_changed_w;
+
+        -- Update previous X/Y values
+        process(clk_i, rst_i)
+        begin
+            if rst_i = '1' then
+                x_prev <= (others => '0');
+                y_prev <= (others => '0');
+
+            elsif rising_edge(clk_i) then
+                x_prev <= x_i;
+                y_prev <= y_i;
+            end if;
+        end process;
+
     PWM_INST : digit_circ
         GENERIC MAP (n => n)
         PORT MAP (
@@ -40,7 +65,7 @@ begin
         GENERIC MAP (n => n)
         PORT MAP (
             clk => clk_i,
-            rst => rst_i,
+            rst => timer_rst_w,
             ena => ena_i,
             EQUY => equy_i,
             timer_val => timer_q
