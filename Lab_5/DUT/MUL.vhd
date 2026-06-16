@@ -1,5 +1,4 @@
 --============================================================================
--- Copyright 2026 Hananya Ribo 
 -- Advanced CPU architecture and Hardware Accelerators Lab 361-1-4693 BGU
 -- MUL module - 16-bit multiplier using four 8-bit partial products
 -- #RV32IM task: implements mul rd, rs1, rs2
