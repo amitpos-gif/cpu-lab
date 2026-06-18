@@ -1,0 +1,14 @@
+# Compile of tb_Adder.vhd failed with 3 errors.
+# Errors: 3, Warnings: 0
+# Errors: 3, Warnings: 0
+# Errors: 3, Warnings: 0
+# Errors: 4, Warnings: 0
+# Errors: 3, Warnings: 0
+# Compile of tb_Adder.vhd failed.
+# Errors: 3, Warnings: 0
+# Compile of AdderSub.vhd failed.
+# Errors: 3, Warnings: 0
+# Compile of FA.vhd failed.
+# Errors: 4, Warnings: 0
+# Compile of aux_package.vhd failed.
+vdel -all -lib work
