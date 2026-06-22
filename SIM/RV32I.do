@@ -1,192 +1,101 @@
+# ============================================================================
+#  LAB5 - RV32IM Pipeline - COMPILE + LOAD + WAVES  (no run, no export)
+#  Usage:   do RV32I.do
+# ============================================================================
+
+# ---- 0. Source folder (edit if you move the project) -------------------------
+set SRC "C:/Users/amitp/OneDrive/Desktop/Comp_Lab/Lab_5/DUT"
+
+# ---- 1. Fresh work library ---------------------------------------------------
+if {[file exists work]} { vdel -all -lib work }
+vlib work
+vmap work work
+
+# ---- 2. Packages (order matters) ---------------------------------------------
+vcom -work work -2008 -explicit $SRC/cond_compilation_package.vhd
+vcom -work work -2008 -explicit $SRC/const_package.vhd
+vcom -work work -2008 -explicit $SRC/aux_package.vhd
+
+# ---- 3. Leaf design modules --------------------------------------------------
+vcom -work work -2008 -explicit $SRC/CONTROL.VHD
+vcom -work work -2008 -explicit $SRC/IDECODE.vhd
+vcom -work work -2008 -explicit $SRC/IFETCH.VHD
+vcom -work work -2008 -explicit $SRC/EXECUTE.VHD
+vcom -work work -2008 -explicit $SRC/MUL_STAGE1.VHD
+vcom -work work -2008 -explicit $SRC/MUL_STAGE2.VHD
+vcom -work work -2008 -explicit $SRC/DMEMORY.VHD
+vcom -work work -2008 -explicit $SRC/WB_MUX.vhd
+vcom -work work -2008 -explicit $SRC/IF_ID_REG.vhd
+vcom -work work -2008 -explicit $SRC/ID_EX_REG.vhd
+vcom -work work -2008 -explicit $SRC/ex_mem_reg.vhd
+vcom -work work -2008 -explicit $SRC/MEM_WB_REG.vhd
+vcom -work work -2008 -explicit $SRC/forwarding_unit.vhd
+vcom -work work -2008 -explicit $SRC/STALL_UNIT.vhd
+vcom -work work -2008 -explicit $SRC/FLUSH_UNIT.vhd
+
+# ---- 4. Core + testbench -----------------------------------------------------
+vcom -work work -2008 -explicit $SRC/RV32I_CORE_PIPLINE.vhd
+vcom -work work -2008 -explicit $SRC/tb_RV32I.vhd
+
+# ---- 5. Elaborate ------------------------------------------------------------
+vsim -gui -L altera_mf -voptargs=+acc work.tb_RV32I
+
+# ---- 6. Waves ----------------------------------------------------------------
 onerror {resume}
 quietly WaveActivateNextPane {} 0
-add wave -noupdate -radix hexadecimal /tb_rv32i/clk_i
-add wave -noupdate -radix hexadecimal /tb_rv32i/rst_i
-add wave -noupdate -color Yellow -itemcolor Yellow /tb_rv32i/CORE/IFE/rst_q
-add wave -noupdate -color Cyan -itemcolor Cyan -radix unsigned -childformat {{/tb_rv32i/mclk_cnt_o(15) -radix hexadecimal} {/tb_rv32i/mclk_cnt_o(14) -radix hexadecimal} {/tb_rv32i/mclk_cnt_o(13) -radix hexadecimal} {/tb_rv32i/mclk_cnt_o(12) -radix hexadecimal} {/tb_rv32i/mclk_cnt_o(11) -radix hexadecimal} {/tb_rv32i/mclk_cnt_o(10) -radix hexadecimal} {/tb_rv32i/mclk_cnt_o(9) -radix hexadecimal} {/tb_rv32i/mclk_cnt_o(8) -radix hexadecimal} {/tb_rv32i/mclk_cnt_o(7) -radix hexadecimal} {/tb_rv32i/mclk_cnt_o(6) -radix hexadecimal} {/tb_rv32i/mclk_cnt_o(5) -radix hexadecimal} {/tb_rv32i/mclk_cnt_o(4) -radix hexadecimal} {/tb_rv32i/mclk_cnt_o(3) -radix hexadecimal} {/tb_rv32i/mclk_cnt_o(2) -radix hexadecimal} {/tb_rv32i/mclk_cnt_o(1) -radix hexadecimal} {/tb_rv32i/mclk_cnt_o(0) -radix hexadecimal}} -subitemconfig {/tb_rv32i/mclk_cnt_o(15) {-color Cyan -height 15 -itemcolor Cyan -radix hexadecimal} /tb_rv32i/mclk_cnt_o(14) {-color Cyan -height 15 -itemcolor Cyan -radix hexadecimal} /tb_rv32i/mclk_cnt_o(13) {-color Cyan -height 15 -itemcolor Cyan -radix hexadecimal} /tb_rv32i/mclk_cnt_o(12) {-color Cyan -height 15 -itemcolor Cyan -radix hexadecimal} /tb_rv32i/mclk_cnt_o(11) {-color Cyan -height 15 -itemcolor Cyan -radix hexadecimal} /tb_rv32i/mclk_cnt_o(10) {-color Cyan -height 15 -itemcolor Cyan -radix hexadecimal} /tb_rv32i/mclk_cnt_o(9) {-color Cyan -height 15 -itemcolor Cyan -radix hexadecimal} /tb_rv32i/mclk_cnt_o(8) {-color Cyan -height 15 -itemcolor Cyan -radix hexadecimal} /tb_rv32i/mclk_cnt_o(7) {-color Cyan -height 15 -itemcolor Cyan -radix hexadecimal} /tb_rv32i/mclk_cnt_o(6) {-color Cyan -height 15 -itemcolor Cyan -radix hexadecimal} /tb_rv32i/mclk_cnt_o(5) {-color Cyan -height 15 -itemcolor Cyan -radix hexadecimal} /tb_rv32i/mclk_cnt_o(4) {-color Cyan -height 15 -itemcolor Cyan -radix hexadecimal} /tb_rv32i/mclk_cnt_o(3) {-color Cyan -height 15 -itemcolor Cyan -radix hexadecimal} /tb_rv32i/mclk_cnt_o(2) {-color Cyan -height 15 -itemcolor Cyan -radix hexadecimal} /tb_rv32i/mclk_cnt_o(1) {-color Cyan -height 15 -itemcolor Cyan -radix hexadecimal} /tb_rv32i/mclk_cnt_o(0) {-color Cyan -height 15 -itemcolor Cyan -radix hexadecimal}} /tb_rv32i/mclk_cnt_o
-add wave -noupdate -radix hexadecimal /tb_rv32i/pc_o
-add wave -noupdate -color Blue -itemcolor Blue -radix hexadecimal /tb_rv32i/instruction_o
-add wave -noupdate -radix hexadecimal /tb_rv32i/RegWrite_ctrl_o
-add wave -noupdate -radix hexadecimal /tb_rv32i/MemWrite_ctrl_o
-add wave -noupdate -radix hexadecimal /tb_rv32i/Branch_ctrl_o
-add wave -noupdate -radix hexadecimal /tb_rv32i/read_data1_o
-add wave -noupdate -radix hexadecimal /tb_rv32i/read_data2_o
-add wave -noupdate -radix hexadecimal /tb_rv32i/write_data_o
-add wave -noupdate -radix hexadecimal /tb_rv32i/alu_res_o
-add wave -noupdate -radix hexadecimal /tb_rv32i/brTaken_o
-add wave -noupdate -radix hexadecimal /tb_rv32i/dtcm_addr_o
-add wave -noupdate -radix hexadecimal /tb_rv32i/dtcm_data_wr_o
-add wave -noupdate -radix hexadecimal /tb_rv32i/dtcm_data_rd_o
-TreeUpdate [SetDefaultTree]
-quietly WaveActivateNextPane
-add wave -noupdate -expand -group IFETCH -radix hexadecimal /tb_rv32i/CORE/IFE/clk_i
-add wave -noupdate -expand -group IFETCH -radix hexadecimal /tb_rv32i/CORE/IFE/rst_i
-add wave -noupdate -expand -group IFETCH -radix hexadecimal /tb_rv32i/CORE/IFE/addr_gen_i
-add wave -noupdate -expand -group IFETCH -radix hexadecimal /tb_rv32i/CORE/IFE/Branch_ctrl_i
-add wave -noupdate -expand -group IFETCH -radix hexadecimal /tb_rv32i/CORE/IFE/brTaken_i
-add wave -noupdate -expand -group IFETCH -radix hexadecimal /tb_rv32i/CORE/IFE/Jal_ctrl_i
-add wave -noupdate -expand -group IFETCH -radix hexadecimal /tb_rv32i/CORE/IFE/Jalr_ctrl_i
-add wave -noupdate -expand -group IFETCH -radix hexadecimal /tb_rv32i/CORE/IFE/alu_res_i
-add wave -noupdate -expand -group IFETCH -color Magenta -itemcolor Magenta -radix hexadecimal /tb_rv32i/CORE/IFE/pc_o
-add wave -noupdate -expand -group IFETCH -color Blue -itemcolor Blue -radix hexadecimal /tb_rv32i/CORE/IFE/pc_plus4_o
-add wave -noupdate -expand -group IFETCH -color Cyan -itemcolor Cyan -radix hexadecimal /tb_rv32i/CORE/IFE/next_pc_w
-add wave -noupdate -expand -group IFETCH -radix hexadecimal /tb_rv32i/CORE/IFE/instruction_o
-add wave -noupdate -expand -group IFETCH -radix hexadecimal /tb_rv32i/CORE/IFE/pc_plus4_q
-add wave -noupdate -expand -group IFETCH -radix hexadecimal /tb_rv32i/CORE/IFE/pc_plus4_r
-add wave -noupdate -expand -group IFETCH -radix hexadecimal /tb_rv32i/CORE/IFE/itcm_addr_w
-add wave -noupdate -expand -group IFETCH -radix hexadecimal /tb_rv32i/CORE/IFE/brTaken_w
-TreeUpdate [SetDefaultTree]
-quietly WaveActivateNextPane
-add wave -noupdate -expand -group IDECODE -radix hexadecimal /tb_rv32i/CORE/ID/clk_i
-add wave -noupdate -expand -group IDECODE -radix hexadecimal /tb_rv32i/CORE/ID/rst_i
-add wave -noupdate -expand -group IDECODE -radix hexadecimal /tb_rv32i/CORE/ID/pc_plus4_i
-add wave -noupdate -expand -group IDECODE -radix hexadecimal /tb_rv32i/CORE/ID/instruction_i
-add wave -noupdate -expand -group IDECODE -radix hexadecimal /tb_rv32i/CORE/ID/dtcm_data_rd_i
-add wave -noupdate -expand -group IDECODE -radix hexadecimal /tb_rv32i/CORE/ID/alu_res_i
-add wave -noupdate -expand -group IDECODE -radix hexadecimal /tb_rv32i/CORE/ID/RegDst_ctrl_i
-add wave -noupdate -expand -group IDECODE -radix hexadecimal /tb_rv32i/CORE/ID/RegWrite_ctrl_i
-add wave -noupdate -expand -group IDECODE -radix hexadecimal /tb_rv32i/CORE/ID/MemtoReg_ctrl_i
-add wave -noupdate -expand -group IDECODE -radix hexadecimal /tb_rv32i/CORE/ID/read_data1_o
-add wave -noupdate -expand -group IDECODE -radix hexadecimal /tb_rv32i/CORE/ID/read_data2_o
-add wave -noupdate -expand -group IDECODE -color Blue -itemcolor Blue -radix hexadecimal /tb_rv32i/CORE/ID/SignExt_o
-add wave -noupdate -expand -group IDECODE -radix hexadecimal /tb_rv32i/CORE/ID/write_data_w
-add wave -noupdate -expand -group IDECODE -radix hexadecimal /tb_rv32i/CORE/ID/opc_w
-add wave -noupdate -expand -group IDECODE -radix hexadecimal /tb_rv32i/CORE/ID/rs1_w
-add wave -noupdate -expand -group IDECODE -radix hexadecimal /tb_rv32i/CORE/ID/rs2_w
-add wave -noupdate -expand -group IDECODE -radix hexadecimal /tb_rv32i/CORE/ID/rd_w
-add wave -noupdate -expand -group IDECODE -radix hexadecimal /tb_rv32i/CORE/ID/Iimm_w
-add wave -noupdate -expand -group IDECODE -radix hexadecimal /tb_rv32i/CORE/ID/Simm_w
-add wave -noupdate -expand -group IDECODE -radix hexadecimal /tb_rv32i/CORE/ID/SBimm_w
-add wave -noupdate -expand -group IDECODE -radix hexadecimal /tb_rv32i/CORE/ID/Uimm_w
-add wave -noupdate -expand -group IDECODE -radix hexadecimal /tb_rv32i/CORE/ID/UJimm_w
-add wave -noupdate -expand -group IDECODE -radix hexadecimal /tb_rv32i/CORE/ID/SignExt_Iimm_w
-add wave -noupdate -expand -group IDECODE -radix hexadecimal /tb_rv32i/CORE/ID/SignExt_Simm_w
-add wave -noupdate -expand -group IDECODE -radix hexadecimal /tb_rv32i/CORE/ID/SignExt_SBimm_w
-add wave -noupdate -expand -group IDECODE -radix hexadecimal /tb_rv32i/CORE/ID/SignExt_Uimm_w
-add wave -noupdate -expand -group IDECODE -radix hexadecimal /tb_rv32i/CORE/ID/SignExt_UJimm_w
-TreeUpdate [SetDefaultTree]
-quietly WaveActivateNextPane
-add wave -noupdate -radix hexadecimal -childformat {{/tb_rv32i/CORE/ID/RF_q(0) -radix hexadecimal} {/tb_rv32i/CORE/ID/RF_q(1) -radix hexadecimal} {/tb_rv32i/CORE/ID/RF_q(2) -radix hexadecimal} {/tb_rv32i/CORE/ID/RF_q(3) -radix hexadecimal} {/tb_rv32i/CORE/ID/RF_q(4) -radix hexadecimal} {/tb_rv32i/CORE/ID/RF_q(5) -radix hexadecimal} {/tb_rv32i/CORE/ID/RF_q(6) -radix hexadecimal} {/tb_rv32i/CORE/ID/RF_q(7) -radix hexadecimal} {/tb_rv32i/CORE/ID/RF_q(8) -radix hexadecimal} {/tb_rv32i/CORE/ID/RF_q(9) -radix hexadecimal} {/tb_rv32i/CORE/ID/RF_q(10) -radix hexadecimal} {/tb_rv32i/CORE/ID/RF_q(11) -radix hexadecimal} {/tb_rv32i/CORE/ID/RF_q(12) -radix hexadecimal} {/tb_rv32i/CORE/ID/RF_q(13) -radix hexadecimal} {/tb_rv32i/CORE/ID/RF_q(14) -radix hexadecimal} {/tb_rv32i/CORE/ID/RF_q(15) -radix hexadecimal} {/tb_rv32i/CORE/ID/RF_q(16) -radix hexadecimal} {/tb_rv32i/CORE/ID/RF_q(17) -radix hexadecimal} {/tb_rv32i/CORE/ID/RF_q(18) -radix hexadecimal} {/tb_rv32i/CORE/ID/RF_q(19) -radix hexadecimal} {/tb_rv32i/CORE/ID/RF_q(20) -radix hexadecimal} {/tb_rv32i/CORE/ID/RF_q(21) -radix hexadecimal} {/tb_rv32i/CORE/ID/RF_q(22) -radix hexadecimal} {/tb_rv32i/CORE/ID/RF_q(23) -radix hexadecimal} {/tb_rv32i/CORE/ID/RF_q(24) -radix hexadecimal} {/tb_rv32i/CORE/ID/RF_q(25) -radix hexadecimal} {/tb_rv32i/CORE/ID/RF_q(26) -radix hexadecimal} {/tb_rv32i/CORE/ID/RF_q(27) -radix hexadecimal} {/tb_rv32i/CORE/ID/RF_q(28) -radix hexadecimal} {/tb_rv32i/CORE/ID/RF_q(29) -radix hexadecimal} {/tb_rv32i/CORE/ID/RF_q(30) -radix hexadecimal} {/tb_rv32i/CORE/ID/RF_q(31) -radix hexadecimal}} -expand -subitemconfig {/tb_rv32i/CORE/ID/RF_q(0) {-height 15 -radix hexadecimal} /tb_rv32i/CORE/ID/RF_q(1) {-height 15 -radix hexadecimal} /tb_rv32i/CORE/ID/RF_q(2) {-height 15 -radix hexadecimal} /tb_rv32i/CORE/ID/RF_q(3) {-height 15 -radix hexadecimal} /tb_rv32i/CORE/ID/RF_q(4) {-height 15 -radix hexadecimal} /tb_rv32i/CORE/ID/RF_q(5) {-height 15 -radix hexadecimal} /tb_rv32i/CORE/ID/RF_q(6) {-height 15 -radix hexadecimal} /tb_rv32i/CORE/ID/RF_q(7) {-height 15 -radix hexadecimal} /tb_rv32i/CORE/ID/RF_q(8) {-height 15 -radix hexadecimal} /tb_rv32i/CORE/ID/RF_q(9) {-height 15 -radix hexadecimal} /tb_rv32i/CORE/ID/RF_q(10) {-height 15 -radix hexadecimal} /tb_rv32i/CORE/ID/RF_q(11) {-height 15 -radix hexadecimal} /tb_rv32i/CORE/ID/RF_q(12) {-height 15 -radix hexadecimal} /tb_rv32i/CORE/ID/RF_q(13) {-height 15 -radix hexadecimal} /tb_rv32i/CORE/ID/RF_q(14) {-height 15 -radix hexadecimal} /tb_rv32i/CORE/ID/RF_q(15) {-height 15 -radix hexadecimal} /tb_rv32i/CORE/ID/RF_q(16) {-height 15 -radix hexadecimal} /tb_rv32i/CORE/ID/RF_q(17) {-height 15 -radix hexadecimal} /tb_rv32i/CORE/ID/RF_q(18) {-height 15 -radix hexadecimal} /tb_rv32i/CORE/ID/RF_q(19) {-height 15 -radix hexadecimal} /tb_rv32i/CORE/ID/RF_q(20) {-height 15 -radix hexadecimal} /tb_rv32i/CORE/ID/RF_q(21) {-height 15 -radix hexadecimal} /tb_rv32i/CORE/ID/RF_q(22) {-height 15 -radix hexadecimal} /tb_rv32i/CORE/ID/RF_q(23) {-height 15 -radix hexadecimal} /tb_rv32i/CORE/ID/RF_q(24) {-height 15 -radix hexadecimal} /tb_rv32i/CORE/ID/RF_q(25) {-height 15 -radix hexadecimal} /tb_rv32i/CORE/ID/RF_q(26) {-height 15 -radix hexadecimal} /tb_rv32i/CORE/ID/RF_q(27) {-height 15 -radix hexadecimal} /tb_rv32i/CORE/ID/RF_q(28) {-height 15 -radix hexadecimal} /tb_rv32i/CORE/ID/RF_q(29) {-height 15 -radix hexadecimal} /tb_rv32i/CORE/ID/RF_q(30) {-height 15 -radix hexadecimal} /tb_rv32i/CORE/ID/RF_q(31) {-height 15 -radix hexadecimal}} /tb_rv32i/CORE/ID/RF_q
-TreeUpdate [SetDefaultTree]
-quietly WaveActivateNextPane
-add wave -noupdate -expand -group CONTROL -radix hexadecimal /tb_rv32i/CORE/CTL/instruction_i
-add wave -noupdate -expand -group CONTROL -radix hexadecimal /tb_rv32i/CORE/CTL/RegDst_ctrl_o
-add wave -noupdate -expand -group CONTROL -radix hexadecimal /tb_rv32i/CORE/CTL/ALUSrc_ctrl_o
-add wave -noupdate -expand -group CONTROL -radix hexadecimal /tb_rv32i/CORE/CTL/MemtoReg_ctrl_o
-add wave -noupdate -expand -group CONTROL -radix hexadecimal /tb_rv32i/CORE/CTL/RegWrite_ctrl_o
-add wave -noupdate -expand -group CONTROL -radix hexadecimal /tb_rv32i/CORE/CTL/MemRead_ctrl_o
-add wave -noupdate -expand -group CONTROL -radix hexadecimal /tb_rv32i/CORE/CTL/MemWrite_ctrl_o
-add wave -noupdate -expand -group CONTROL -radix hexadecimal /tb_rv32i/CORE/CTL/Branch_ctrl_o
-add wave -noupdate -expand -group CONTROL -radix hexadecimal /tb_rv32i/CORE/CTL/Jal_ctrl_o
-add wave -noupdate -expand -group CONTROL -radix hexadecimal /tb_rv32i/CORE/CTL/Jalr_ctrl_o
-add wave -noupdate -expand -group CONTROL -radix hexadecimal /tb_rv32i/CORE/CTL/UpperIm_ctrl_o
-add wave -noupdate -expand -group CONTROL -radix hexadecimal /tb_rv32i/CORE/CTL/ALUOp_ctrl_o
-add wave -noupdate -expand -group CONTROL -radix hexadecimal /tb_rv32i/CORE/CTL/Rtype_w
-add wave -noupdate -expand -group CONTROL -radix hexadecimal /tb_rv32i/CORE/CTL/Itype_w
-add wave -noupdate -expand -group CONTROL -radix hexadecimal /tb_rv32i/CORE/CTL/Stype_w
-add wave -noupdate -expand -group CONTROL -radix hexadecimal /tb_rv32i/CORE/CTL/SBtype_w
-add wave -noupdate -expand -group CONTROL -radix hexadecimal /tb_rv32i/CORE/CTL/Utype_w
-add wave -noupdate -expand -group CONTROL -radix hexadecimal /tb_rv32i/CORE/CTL/UJtype_w
-add wave -noupdate -expand -group CONTROL -radix hexadecimal /tb_rv32i/CORE/CTL/lb_w
-add wave -noupdate -expand -group CONTROL -radix hexadecimal /tb_rv32i/CORE/CTL/lh_w
-add wave -noupdate -expand -group CONTROL -radix hexadecimal /tb_rv32i/CORE/CTL/lw_w
-add wave -noupdate -expand -group CONTROL -radix hexadecimal /tb_rv32i/CORE/CTL/lbu_w
-add wave -noupdate -expand -group CONTROL -radix hexadecimal /tb_rv32i/CORE/CTL/lhu_w
-add wave -noupdate -expand -group CONTROL -radix hexadecimal /tb_rv32i/CORE/CTL/lwu_w
-add wave -noupdate -expand -group CONTROL -radix hexadecimal /tb_rv32i/CORE/CTL/ld_w
-add wave -noupdate -expand -group CONTROL -radix hexadecimal /tb_rv32i/CORE/CTL/sb_w
-add wave -noupdate -expand -group CONTROL -radix hexadecimal /tb_rv32i/CORE/CTL/sh_w
-add wave -noupdate -expand -group CONTROL -radix hexadecimal /tb_rv32i/CORE/CTL/sw_w
-add wave -noupdate -expand -group CONTROL -radix hexadecimal /tb_rv32i/CORE/CTL/st_w
-add wave -noupdate -expand -group CONTROL -radix hexadecimal /tb_rv32i/CORE/CTL/beq_w
-add wave -noupdate -expand -group CONTROL -radix hexadecimal /tb_rv32i/CORE/CTL/bne_w
-add wave -noupdate -expand -group CONTROL -radix hexadecimal /tb_rv32i/CORE/CTL/blt_w
-add wave -noupdate -expand -group CONTROL -radix hexadecimal /tb_rv32i/CORE/CTL/bge_w
-add wave -noupdate -expand -group CONTROL -radix hexadecimal /tb_rv32i/CORE/CTL/bltu_w
-add wave -noupdate -expand -group CONTROL -radix hexadecimal /tb_rv32i/CORE/CTL/bgeu_w
-add wave -noupdate -expand -group CONTROL -radix hexadecimal /tb_rv32i/CORE/CTL/branch_w
-add wave -noupdate -expand -group CONTROL -radix hexadecimal /tb_rv32i/CORE/CTL/jal_w
-add wave -noupdate -expand -group CONTROL -radix hexadecimal /tb_rv32i/CORE/CTL/jalr_w
-add wave -noupdate -expand -group CONTROL -radix hexadecimal /tb_rv32i/CORE/CTL/add_w
-add wave -noupdate -expand -group CONTROL -radix hexadecimal /tb_rv32i/CORE/CTL/addi_w
-add wave -noupdate -expand -group CONTROL -radix hexadecimal /tb_rv32i/CORE/CTL/and_w
-add wave -noupdate -expand -group CONTROL -radix hexadecimal /tb_rv32i/CORE/CTL/andi_w
-add wave -noupdate -expand -group CONTROL -radix hexadecimal /tb_rv32i/CORE/CTL/or_w
-add wave -noupdate -expand -group CONTROL -radix hexadecimal /tb_rv32i/CORE/CTL/ori_w
-add wave -noupdate -expand -group CONTROL -radix hexadecimal /tb_rv32i/CORE/CTL/sll_w
-add wave -noupdate -expand -group CONTROL -radix hexadecimal /tb_rv32i/CORE/CTL/slli_w
-add wave -noupdate -expand -group CONTROL -radix hexadecimal /tb_rv32i/CORE/CTL/sra_w
-add wave -noupdate -expand -group CONTROL -radix hexadecimal /tb_rv32i/CORE/CTL/srai_w
-add wave -noupdate -expand -group CONTROL -radix hexadecimal /tb_rv32i/CORE/CTL/srl_w
-add wave -noupdate -expand -group CONTROL -radix hexadecimal /tb_rv32i/CORE/CTL/srli_w
-add wave -noupdate -expand -group CONTROL -radix hexadecimal /tb_rv32i/CORE/CTL/sub_w
-add wave -noupdate -expand -group CONTROL -radix hexadecimal /tb_rv32i/CORE/CTL/xor_w
-add wave -noupdate -expand -group CONTROL -radix hexadecimal /tb_rv32i/CORE/CTL/xori_w
-add wave -noupdate -expand -group CONTROL -radix hexadecimal /tb_rv32i/CORE/CTL/auipc_w
-add wave -noupdate -expand -group CONTROL -radix hexadecimal /tb_rv32i/CORE/CTL/lui_w
-add wave -noupdate -expand -group CONTROL -radix hexadecimal /tb_rv32i/CORE/CTL/slt_w
-add wave -noupdate -expand -group CONTROL -radix hexadecimal /tb_rv32i/CORE/CTL/slti_w
-add wave -noupdate -expand -group CONTROL -radix hexadecimal /tb_rv32i/CORE/CTL/sltu_w
-add wave -noupdate -expand -group CONTROL -radix hexadecimal /tb_rv32i/CORE/CTL/sltiu_w
-add wave -noupdate -expand -group CONTROL -radix hexadecimal /tb_rv32i/CORE/CTL/opc_w
-TreeUpdate [SetDefaultTree]
-quietly WaveActivateNextPane
-add wave -noupdate -expand -group EXECUTE -radix hexadecimal /tb_rv32i/CORE/EXE/read_data1_i
-add wave -noupdate -expand -group EXECUTE -radix hexadecimal /tb_rv32i/CORE/EXE/read_data2_i
-add wave -noupdate -expand -group EXECUTE -radix hexadecimal /tb_rv32i/CORE/EXE/UpperIm_ctrl_i
-add wave -noupdate -expand -group EXECUTE -radix hexadecimal -childformat {{/tb_rv32i/CORE/EXE/ALUOp_ctrl_i(4) -radix hexadecimal} {/tb_rv32i/CORE/EXE/ALUOp_ctrl_i(3) -radix hexadecimal} {/tb_rv32i/CORE/EXE/ALUOp_ctrl_i(2) -radix hexadecimal} {/tb_rv32i/CORE/EXE/ALUOp_ctrl_i(1) -radix hexadecimal} {/tb_rv32i/CORE/EXE/ALUOp_ctrl_i(0) -radix hexadecimal}} -subitemconfig {/tb_rv32i/CORE/EXE/ALUOp_ctrl_i(4) {-height 15 -radix hexadecimal} /tb_rv32i/CORE/EXE/ALUOp_ctrl_i(3) {-height 15 -radix hexadecimal} /tb_rv32i/CORE/EXE/ALUOp_ctrl_i(2) {-height 15 -radix hexadecimal} /tb_rv32i/CORE/EXE/ALUOp_ctrl_i(1) {-height 15 -radix hexadecimal} /tb_rv32i/CORE/EXE/ALUOp_ctrl_i(0) {-height 15 -radix hexadecimal}} /tb_rv32i/CORE/EXE/ALUOp_ctrl_i
-add wave -noupdate -expand -group EXECUTE -radix hexadecimal /tb_rv32i/CORE/EXE/ALUSrc_ctrl_i
-add wave -noupdate -expand -group EXECUTE -color {Violet Red} -itemcolor {Violet Red} -radix hexadecimal /tb_rv32i/CORE/EXE/pc_i
-add wave -noupdate -expand -group EXECUTE -color Navy -itemcolor Navy -radix hexadecimal /tb_rv32i/CORE/EXE/sign_extend_i
-add wave -noupdate -expand -group EXECUTE -color Cyan -itemcolor Cyan -radix hexadecimal /tb_rv32i/CORE/EXE/addr_gen_o
-add wave -noupdate -expand -group EXECUTE -radix hexadecimal /tb_rv32i/CORE/EXE/sub_res_w
-add wave -noupdate -expand -group EXECUTE -color Magenta -itemcolor Magenta -radix hexadecimal /tb_rv32i/CORE/EXE/ain_w
-add wave -noupdate -expand -group EXECUTE -color Blue -itemcolor Blue -radix hexadecimal /tb_rv32i/CORE/EXE/bin_w
-add wave -noupdate -expand -group EXECUTE -color Cyan -itemcolor Cyan -radix hexadecimal /tb_rv32i/CORE/EXE/alu_res_o
-add wave -noupdate -expand -group EXECUTE -color {Medium Spring Green} -itemcolor {Medium Spring Green} -radix hexadecimal /tb_rv32i/CORE/EXE/brTaken_o
-add wave -noupdate -expand -group EXECUTE -radix hexadecimal /tb_rv32i/CORE/EXE/ltu_res_w
-add wave -noupdate -expand -group EXECUTE -radix hexadecimal /tb_rv32i/CORE/EXE/eq_res_w
-add wave -noupdate -expand -group EXECUTE -radix hexadecimal /tb_rv32i/CORE/EXE/msbneq_res_w
-add wave -noupdate -expand -group EXECUTE -radix hexadecimal /tb_rv32i/CORE/EXE/brTaken_w
-add wave -noupdate -expand -group EXECUTE -radix hexadecimal /tb_rv32i/CORE/EXE/alu_res_r
-add wave -noupdate -expand -group EXECUTE -radix hexadecimal /tb_rv32i/CORE/EXE/brl_shl_s1_r
-add wave -noupdate -expand -group EXECUTE -radix hexadecimal /tb_rv32i/CORE/EXE/brl_shl_s2_r
-add wave -noupdate -expand -group EXECUTE -radix hexadecimal /tb_rv32i/CORE/EXE/brl_shl_s3_r
-add wave -noupdate -expand -group EXECUTE -radix hexadecimal /tb_rv32i/CORE/EXE/brl_shl_s4_r
-add wave -noupdate -expand -group EXECUTE -radix hexadecimal /tb_rv32i/CORE/EXE/brl_shr_s1_r
-add wave -noupdate -expand -group EXECUTE -radix hexadecimal /tb_rv32i/CORE/EXE/brl_shr_s2_r
-add wave -noupdate -expand -group EXECUTE -radix hexadecimal /tb_rv32i/CORE/EXE/brl_shr_s3_r
-add wave -noupdate -expand -group EXECUTE -radix hexadecimal /tb_rv32i/CORE/EXE/brl_shr_s4_r
-add wave -noupdate -expand -group EXECUTE -radix hexadecimal /tb_rv32i/CORE/EXE/brl_shr_pad_r
-TreeUpdate [SetDefaultTree]
-quietly WaveActivateNextPane
-add wave -noupdate -expand -group DMEMORY -radix hexadecimal /tb_rv32i/CORE/MEM/clk_i
-add wave -noupdate -expand -group DMEMORY -radix hexadecimal /tb_rv32i/CORE/MEM/rst_i
-add wave -noupdate -expand -group DMEMORY -radix hexadecimal /tb_rv32i/CORE/MEM/dtcm_addr_i
-add wave -noupdate -expand -group DMEMORY -radix hexadecimal /tb_rv32i/CORE/MEM/dtcm_data_wr_i
-add wave -noupdate -expand -group DMEMORY -radix hexadecimal /tb_rv32i/CORE/MEM/MemRead_ctrl_i
-add wave -noupdate -expand -group DMEMORY -radix hexadecimal /tb_rv32i/CORE/MEM/MemWrite_ctrl_i
-add wave -noupdate -expand -group DMEMORY -radix hexadecimal /tb_rv32i/CORE/MEM/dtcm_data_rd_o
-add wave -noupdate -expand -group DMEMORY -radix hexadecimal /tb_rv32i/CORE/MEM/wrclk_w
-TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {52700000 ps} 1} {{Cursor 2} {52799569 ps} 1}
-quietly wave cursor active 1
-configure wave -namecolwidth 314
-configure wave -valuecolwidth 194
-configure wave -justifyvalue left
-configure wave -signalnamewidth 0
-configure wave -snapdistance 10
-configure wave -datasetprefix 0
-configure wave -rowmargin 4
-configure wave -childrowmargin 2
-configure wave -gridoffset 0
-configure wave -gridperiod 1
-configure wave -griddelta 40
-configure wave -timeline 0
-configure wave -timelineunits ps
+
+add wave -divider "TESTBENCH"
+add wave -label clk            sim:/tb_RV32I/clk_i
+add wave -label rst            sim:/tb_RV32I/rst_i
+add wave -hex -label BPADDR    sim:/tb_RV32I/BPADDR_i
+
+add wave -divider "PIPELINE PC / INSTR"
+add wave -hex sim:/tb_RV32I/IFpc_o   sim:/tb_RV32I/IFinstruction_o
+add wave -hex sim:/tb_RV32I/IDpc_o   sim:/tb_RV32I/IDinstruction_o
+add wave -hex sim:/tb_RV32I/EXpc_o   sim:/tb_RV32I/EXinstruction_o
+add wave -hex sim:/tb_RV32I/MEMpc_o  sim:/tb_RV32I/MEMinstruction_o
+add wave -hex sim:/tb_RV32I/WBpc_o   sim:/tb_RV32I/WBinstruction_o
+
+add wave -divider "HAZARD / IPC"
+add wave -label STRIGGER          sim:/tb_RV32I/STRIGGER_o
+add wave -unsigned -label STCNT   sim:/tb_RV32I/STCNT_o
+add wave -unsigned -label FHCNT   sim:/tb_RV32I/FHCNT_o
+add wave -unsigned -label CLKCNT  sim:/tb_RV32I/CLKCNT_o
+
+add wave -divider "STAGE INTERNALS"
+add wave -group IFETCH   -r -hex sim:/tb_RV32I/CORE/IFETCH_inst/*
+add wave -group IF_ID    -r -hex sim:/tb_RV32I/CORE/IF_ID_inst/*
+add wave -group CONTROL  -r -hex sim:/tb_RV32I/CORE/CONTROL_inst/*
+add wave -group IDECODE  -r -hex sim:/tb_RV32I/CORE/IDECODE_inst/*
+add wave -group ID_EX    -r -hex sim:/tb_RV32I/CORE/ID_EX_inst/*
+add wave -group EXECUTE  -r -hex sim:/tb_RV32I/CORE/EXECUTE_inst/*
+add wave -group MUL1     -r -hex sim:/tb_RV32I/CORE/MUL1_inst/*
+add wave -group EX_MEM   -r -hex sim:/tb_RV32I/CORE/EX_MEM_inst/*
+add wave -group DMEM     -r -hex sim:/tb_RV32I/CORE/DMEM_inst/*
+add wave -group MUL2     -r -hex sim:/tb_RV32I/CORE/MUL2_inst/*
+add wave -group MEM_WB   -r -hex sim:/tb_RV32I/CORE/MEM_WB_inst/*
+add wave -group WB_MUX   -r -hex sim:/tb_RV32I/CORE/WB_MUX_inst/*
+add wave -group FORWARD  -r -hex sim:/tb_RV32I/CORE/FWD_inst/*
+add wave -group STALL    -r -hex sim:/tb_RV32I/CORE/STALL_inst/*
+add wave -group FLUSH    -r -hex sim:/tb_RV32I/CORE/FLUSH_inst/*
+
+configure wave -namecolwidth 280
+configure wave -valuecolwidth 120
+configure wave -timelineunits ns
 update
-WaveRestoreZoom {52345291 ps} {53965184 ps}
-bookmark add wave bookmark2 {{36 ps} {116 ps}} 0
-bookmark add wave bookmark3 {{0 ps} {1 ns}} 0
 
+echo "Loaded + waves ready. Run and export manually (commands below)."
 
+# ============================================================================
+#  MANUAL COMMANDS - copy/paste into the Transcript yourself
+# ============================================================================
+#  run:           run 500 us
+#  check end:     examine sim:/tb_RV32I/IFinstruction_o     (parked on 0000006F)
+#  list mems:     mem list
+#
+#  export DTCM:
+#  mem save -o {C:/Users/amitp/OneDrive/Desktop/Comp_Lab/Lab_5/BENCHMARKS/test1/RV32IM/gcc_compiled/bin/M9K-intel/DTCM_test1_pipline.mem} -f mti -data hex -addr hex -startaddress 0 -endaddress 2047 -wordsperline 1 sim:/tb_RV32I/CORE/DMEM_inst/data_memory/MEMORY/m_mem_data_a
+#
+#  export ITCM (optional):
+#  mem save -o {C:/Users/amitp/OneDrive/Desktop/Comp_Lab/Lab_5/BENCHMARKS/test1/RV32IM/gcc_compiled/bin/M9K-intel/ITCM_PIPLINE.mem} -f mti -data hex -addr hex -startaddress 0 -endaddress 2047 -wordsperline 1 sim:/tb_RV32I/CORE/IFETCH_inst/inst_memory/MEMORY/m_mem_data_a
+# ============================================================================
