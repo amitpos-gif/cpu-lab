@@ -117,36 +117,43 @@ END COMPONENT;
 	-- Stage 3 : Execute (ALU + branch resolve + addr_gen) -- exposes ain_o/bin_o
 	--           (post-forward operands) so MUL_STAGE1 can be driven in the core
 	--========================================================================
-	COMPONENT Execute IS
-		generic(
-			DATA_BUS_WIDTH : integer := 32;
-			PC_WIDTH       : integer := 10
-		);
-		PORT(
-			read_data1_i      : IN  STD_LOGIC_VECTOR(DATA_BUS_WIDTH-1 DOWNTO 0);
-			read_data2_i      : IN  STD_LOGIC_VECTOR(DATA_BUS_WIDTH-1 DOWNTO 0);
-			sign_extend_i     : IN  STD_LOGIC_VECTOR(DATA_BUS_WIDTH-1 DOWNTO 0);
-			pc_i              : IN  STD_LOGIC_VECTOR(PC_WIDTH-1 DOWNTO 0);
-			mulop_i           : IN  STD_LOGIC;
-			ALUOp_ctrl_i      : IN  STD_LOGIC_VECTOR(4 DOWNTO 0);
-			ALUSrc_ctrl_i     : IN  STD_LOGIC;
-			Branch_ctrl_i     : IN  STD_LOGIC;
-			Jal_ctrl_i        : IN  STD_LOGIC;
-			Jalr_ctrl_i       : IN  STD_LOGIC;
-			UpperIm_ctrl_i    : IN  STD_LOGIC_VECTOR(1 DOWNTO 0);
-			Forward_Ain_i     : IN  STD_LOGIC_VECTOR(1 DOWNTO 0);
-			Forward_Bin_i     : IN  STD_LOGIC_VECTOR(1 DOWNTO 0);
-			exmem_fwd_val_i   : IN  STD_LOGIC_VECTOR(DATA_BUS_WIDTH-1 DOWNTO 0);
-			memwb_fwd_val_i   : IN  STD_LOGIC_VECTOR(DATA_BUS_WIDTH-1 DOWNTO 0);
-			Jalr_ctrl_o       : OUT STD_LOGIC;
-			br_or_jump_taken_o: OUT STD_LOGIC;
-			alu_res_o         : OUT STD_LOGIC_VECTOR(DATA_BUS_WIDTH-1 DOWNTO 0);
-			adder_gen_o       : OUT STD_LOGIC_VECTOR(PC_WIDTH-1 DOWNTO 0);
-			ain_o             : OUT STD_LOGIC_VECTOR(DATA_BUS_WIDTH-1 DOWNTO 0);
-			bin_o             : OUT STD_LOGIC_VECTOR(DATA_BUS_WIDTH-1 DOWNTO 0)
+	COMPONENT  Execute IS
+	generic(
+		DATA_BUS_WIDTH 	: integer := 32;
+		PC_WIDTH 				: integer := 10
+	);
+	PORT(	
+		--Inputs
+		read_data1_i 			: IN 	STD_LOGIC_VECTOR(DATA_BUS_WIDTH-1 DOWNTO 0);
+		read_data2_i 			: IN 	STD_LOGIC_VECTOR(DATA_BUS_WIDTH-1 DOWNTO 0);
+		sign_extend_i 			: IN 	STD_LOGIC_VECTOR(DATA_BUS_WIDTH-1 DOWNTO 0);
+		pc_i					: IN 	STD_LOGIC_VECTOR(PC_WIDTH-1 DOWNTO 0);
+		--control signals ex---
+		mulop_i					: IN 	STD_LOGIC; 
+		ALUOp_ctrl_i	 		: IN 	STD_LOGIC_VECTOR(4 DOWNTO 0);
+		ALUSrc_ctrl_i 			: IN 	STD_LOGIC;
+		Branch_ctrl_i			: IN 	STD_LOGIC;	-- "this is a branch instruction" (EX bundle, from ID/EX)
+		Jal_ctrl_i				: IN 	STD_LOGIC;	-- "this is JAL"
+		Jalr_ctrl_i				: IN 	STD_LOGIC;	-- "this is JALR"
+		UpperIm_ctrl_i 			: IN 	STD_LOGIC_VECTOR(1 DOWNTO 0);	-- "00"=normal RF read, "01"=PC for AUIPC, "10"=zeros for LUI
+
+		Forward_Ain_i			: IN 	STD_LOGIC_VECTOR(1 DOWNTO 0);	-- from Forwarding-Unit: "00"=none, "10"=EX/MEM, "01"=MEM/WB
+		Forward_Bin_i			: IN 	STD_LOGIC_VECTOR(1 DOWNTO 0);
+		exmem_fwd_val_i			: IN 	STD_LOGIC_VECTOR(DATA_BUS_WIDTH-1 DOWNTO 0);	-- EX/MEM's forwardable result (ALUres typically)
+		memwb_fwd_val_i			: IN 	STD_LOGIC_VECTOR(DATA_BUS_WIDTH-1 DOWNTO 0);	-- MEM/WB's forwardable result (post writeback-mux)
+			
+		--Outputs
+		Jalr_ctrl_o 			: OUT	STD_LOGIC;
+		br_or_jump_taken_o		: OUT	STD_LOGIC;	-- (Branch AND brTaken) OR Jal OR Jalr, latched by EX_MEM_REG
+		alu_res_o 				: OUT	STD_LOGIC_VECTOR(DATA_BUS_WIDTH-1 DOWNTO 0);
+		adder_gen_o 			: OUT	STD_LOGIC_VECTOR(PC_WIDTH-1 DOWNTO 0);
+		mulop_o					: OUT 	STD_LOGIC;
+		ex_mul_stg1_p0_o			: OUT	STD_LOGIC_VECTOR(15 DOWNTO 0);
+		ex_mul_stg1_p1_o			: OUT	STD_LOGIC_VECTOR(15 DOWNTO 0);
+		ex_mul_stg1_p2_o			: OUT	STD_LOGIC_VECTOR(15 DOWNTO 0);
+		ex_mul_stg1_p3_o			: OUT	STD_LOGIC_VECTOR(15 DOWNTO 0)
 		);
 	END COMPONENT;
-
 	--========================================================================
 	-- Multiplier stage 1 (EX stage) : four 8x8 partial products
 	--========================================================================
@@ -169,21 +176,32 @@ END COMPONENT;
 	-- Stage 4 : Data memory (DTCM)
 	--========================================================================
 	COMPONENT dmemory IS
-		generic(
-			DATA_BUS_WIDTH  : integer := 32;
-			DTCM_ADDR_WIDTH : integer := 8;
-			WORDS_NUM       : integer := 256
-		);
-		PORT(
-			clk_i           : IN  STD_LOGIC;
-			rst_i           : IN  STD_LOGIC;
-			dtcm_addr_i     : IN  STD_LOGIC_VECTOR(DTCM_ADDR_WIDTH-1 DOWNTO 0);
-			dtcm_data_wr_i  : IN  STD_LOGIC_VECTOR(DATA_BUS_WIDTH-1 DOWNTO 0);
-			MemRead_ctrl_i  : IN  STD_LOGIC;
-			MemWrite_ctrl_i : IN  STD_LOGIC;
-			dtcm_data_rd_o  : OUT STD_LOGIC_VECTOR(DATA_BUS_WIDTH-1 DOWNTO 0)
-		);
-	END COMPONENT;
+	generic(
+		DATA_BUS_WIDTH 	: integer := 32;
+		DTCM_ADDR_WIDTH : integer := 8;
+		WORDS_NUM 			: integer := 256
+	);
+	PORT(	
+		--Inputs
+		clk_i						: IN 	STD_LOGIC;
+		rst_i						: IN 	STD_LOGIC;
+		dtcm_addr_i 		: IN 	STD_LOGIC_VECTOR(DTCM_ADDR_WIDTH-1 DOWNTO 0);
+		dtcm_data_wr_i 	: IN 	STD_LOGIC_VECTOR(DATA_BUS_WIDTH-1 DOWNTO 0);
+		MemRead_ctrl_i  : IN 	STD_LOGIC;
+		MemWrite_ctrl_i : IN 	STD_LOGIC;
+		mulop_i				: IN 	STD_LOGIC;
+		mul_stg1_p0_i : IN 	STD_LOGIC_VECTOR(15 DOWNTO 0);
+		mul_stg1_p1_i : IN 	STD_LOGIC_VECTOR(15 DOWNTO 0);
+		mul_stg1_p2_i : IN 	STD_LOGIC_VECTOR(15 DOWNTO 0);
+		mul_stg1_p3_i : IN 	STD_LOGIC_VECTOR(15 DOWNTO 0);
+
+		
+		--Outputs
+		mul_result_o 	: OUT STD_LOGIC_VECTOR(DATA_BUS_WIDTH-1 DOWNTO 0);
+		dtcm_data_rd_o 	: OUT STD_LOGIC_VECTOR(DATA_BUS_WIDTH-1 DOWNTO 0)
+
+	);
+END COMPONENT;
 
 	--========================================================================
 	-- Multiplier stage 2 (MEM stage) : combine partials into 32-bit product

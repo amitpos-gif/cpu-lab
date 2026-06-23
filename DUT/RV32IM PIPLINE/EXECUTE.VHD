@@ -5,6 +5,7 @@ USE IEEE.STD_LOGIC_1164.ALL;
 USE IEEE.STD_LOGIC_ARITH.ALL;
 USE IEEE.STD_LOGIC_SIGNED.ALL;
 USE work.const_package.all;
+USE work.aux_package.all;
 
 
 ENTITY  Execute IS
@@ -37,8 +38,11 @@ ENTITY  Execute IS
 		br_or_jump_taken_o		: OUT	STD_LOGIC;	-- (Branch AND brTaken) OR Jal OR Jalr, latched by EX_MEM_REG
 		alu_res_o 				: OUT	STD_LOGIC_VECTOR(DATA_BUS_WIDTH-1 DOWNTO 0);
 		adder_gen_o 			: OUT	STD_LOGIC_VECTOR(PC_WIDTH-1 DOWNTO 0);
-		ain_o					: OUT	STD_LOGIC_VECTOR(DATA_BUS_WIDTH-1 DOWNTO 0);	-- for the mul
-		bin_o					: OUT	STD_LOGIC_VECTOR(DATA_BUS_WIDTH-1 DOWNTO 0)	-- for the mul
+		mulop_o					: OUT 	STD_LOGIC;
+		ex_mul_stg1_p0_o			: OUT	STD_LOGIC_VECTOR(15 DOWNTO 0);
+		ex_mul_stg1_p1_o			: OUT	STD_LOGIC_VECTOR(15 DOWNTO 0);
+		ex_mul_stg1_p2_o			: OUT	STD_LOGIC_VECTOR(15 DOWNTO 0);
+		ex_mul_stg1_p3_o			: OUT	STD_LOGIC_VECTOR(15 DOWNTO 0)
 	);
 END Execute;
 
@@ -56,6 +60,7 @@ ARCHITECTURE struct OF Execute IS
 	SIGNAL	brTaken_w 				: STD_LOGIC;
 	signal 	br_or_jump_taken_w		: STD_LOGIC;
 	signal  Jalr_ctrl_w				: STD_LOGIC;
+	SIGNAL  mulop7_w				: STD_LOGIC_VECTOR(6 DOWNTO 0);
 	
 	SIGNAL	brl_shl_s1_r			: STD_LOGIC_VECTOR(DATA_BUS_WIDTH-1 DOWNTO 0);
 	SIGNAL	brl_shl_s2_r			: STD_LOGIC_VECTOR(DATA_BUS_WIDTH-1 DOWNTO 0);
@@ -92,16 +97,6 @@ WITH UpperIm_ctrl_i SELECT
 	
 bin_pre_w <= 	read_data2_i	WHEN not ALUSrc_ctrl_i ELSE	sign_extend_i(DATA_BUS_WIDTH-1 DOWNTO 0);
 
--- Forwarding muxes, per Figure 7: sit AFTER the original mux above, and
--- only override its result with a more-recent value still in flight in
--- EX/MEM or MEM/WB. When Forward_Ain/Bin = "00" (no hazard detected by
--- the Forwarding-Unit), ain_w/bin_w simply pass ain_pre_w/bin_pre_w
--- through unchanged -- so PC/immediate/zero cases are automatically
--- unaffected by forwarding in normal operation, matching the figure's
--- structure exactly (confirmed by tracing the mux cluster feeding Ain:
--- the existing 3-way mux's output becomes input "1" of a second,
--- downstream 3-way mux whose other two inputs are the EX/MEM and MEM/WB
--- forwarded values).
 WITH Forward_Ain_i SELECT
 	ain_w <= 	ain_pre_w							WHEN	"00",
 						exmem_fwd_val_i				WHEN	"10",
@@ -113,6 +108,24 @@ WITH Forward_Bin_i SELECT
 						exmem_fwd_val_i				WHEN	"10",
 						memwb_fwd_val_i				WHEN	"01",
 						bin_pre_w							WHEN	OTHERS;
+
+mulop7_w <= (others => '0') WHEN mulop_i = '0' ELSE "0000001"; -- 1 for MUL, 0 for no MUL
+
+mulop_o <= mulop_i;
+
+MUL1_inst : Mul_Stage1
+		generic map (
+			DATA_BUS_WIDTH => DATA_BUS_WIDTH
+		)
+		port map (
+			Ain   => ain_w,
+			Bin   => bin_w,
+			MULOP => mulop7_w,
+			P0_o  => ex_mul_stg1_p0_o,
+			P1_o  => ex_mul_stg1_p1_o,
+			P2_o  => ex_mul_stg1_p2_o,
+			P3_o  => ex_mul_stg1_p3_o
+		);
 
 
 --Reused resuls 
@@ -342,6 +355,5 @@ alu_res_o	<= alu_res_r;
 jalr_ctrl_w	 <= Jalr_ctrl_i;
 jalr_ctrl_o 	<= jalr_ctrl_w ;
 br_or_jump_taken_o	<= (Branch_ctrl_i AND brTaken_w) OR Jal_ctrl_i ; ---AND OA BAFORE SIGNAL AS AN INPT TO THE REGIDTER EX/MEM BEFORE FLADH
-ain_o	<= ain_w;
-bin_o	<= bin_w; 
+
 END struct;

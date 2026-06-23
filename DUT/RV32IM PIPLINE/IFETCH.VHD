@@ -47,14 +47,14 @@ BEGIN
 	--=======================================
 	inst_memory: altsyncram
 	GENERIC MAP (
-		operation_mode					=> "ROM",
-		width_a 								=> DATA_BUS_WIDTH,
+		operation_mode						=> "ROM",
+		width_a 							=> DATA_BUS_WIDTH,
 		widthad_a 							=> ITCM_ADDR_WIDTH,
 		numwords_a 							=> WORDS_NUM,
-		lpm_hint 								=> "ENABLE_RUNTIME_MOD = YES,INSTANCE_NAME = ITCM",
-		lpm_type 								=> "altsyncram",
-		outdata_reg_a 					=> "UNREGISTERED",
-		init_file 							=> "C:\Users\amitp\OneDrive\Desktop\Comp_Lab\Lab_5\BENCHMARKS\test1\RV32IM\RV32IM PIPELINE\man_compiled\bin\M9K-intel\ITCM.hex",
+		lpm_hint 							=> "ENABLE_RUNTIME_MOD = YES,INSTANCE_NAME = ITCM",
+		lpm_type 							=> "altsyncram",
+		outdata_reg_a 						=> "UNREGISTERED",
+		init_file 							=> "C:\Users\123\Desktop\lab_arc\lab_5\Benchmark Apps\test1\RV32IM\man_compiled\bin\M9K-intel\ITCM.HEX",
 		intended_device_family	=> "Cyclone"
 	)
 	PORT MAP (

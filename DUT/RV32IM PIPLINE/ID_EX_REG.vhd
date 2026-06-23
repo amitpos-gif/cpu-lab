@@ -1,40 +1,4 @@
---============================================================================
--- Advanced CPU architecture and Hardware Accelerators Lab 361-1-4693 BGU
--- ID/EX Pipeline Register
---
--- Sits between stage 2 (IDECODE) and stage 3 (EXECUTE), per Figure 7.
--- This is the widest pipeline register: Decode is where every data value
--- AND every control signal is first produced, so everything has to be
--- latched here before it can flow further down the pipe.
---
--- Control signals are grouped into three bundles, exactly as drawn in
--- Figure 7 (the WB / M / EX labels stacked inside the ID/EX box):
---
---   EX bundle  -> consumed immediately by stage 3 (this register's own
---                 output stage). Not forwarded any further once EX/MEM
---                 latches, because by then EX's job is done.
---   M  bundle  -> consumed by stage 4 (MEMORY). Still has to be carried
---                 ONE more register hop (into EX/MEM) before it's used.
---   WB bundle  -> consumed by stage 5 (WRITEBACK). Has to be carried
---                 THREE more register hops (ID/EX -> EX/MEM -> MEM/WB)
---                 before it's finally used.
---
--- rs1/rs2/rd are latched here not because EXECUTE needs them for the ALU
--- (read_data1_i/read_data2_i already carry the actual operand VALUES),
--- but because the Forwarding-Unit needs ID/EX_rs1 and ID/EX_rs2 to decide
--- whether EXECUTE's ALU inputs should be forwarded from EX/MEM or MEM/WB
--- instead of using the (possibly stale) register-file values.
---
--- Hazard behaviour:
---   flush_i = '1'  ->  force NOP (branch/jump resolved as taken in stage 4)
---   stall_i = '1'  ->  force NOP (bubble insertion for a load-use hazard
---                       detected by the Stall Condition Unit, which compares
---                       THIS register's own MemRead_o/rd_o against IF/ID's
---                       rs1/rs2 -- the bubble request loops back here)
---
--- Priority: rst_i > flush_i > stall_i > normal latch.
--- Synchronous reset, per LAB5 design requirement #2.
---============================================================================
+
 LIBRARY IEEE;
 USE IEEE.STD_LOGIC_1164.ALL;
 USE work.const_package.all;

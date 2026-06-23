@@ -21,10 +21,10 @@ ENTITY WB_MUX IS
 
 		-- ---- WB control bundle (from MEM/WB) ----
 		WBSrc_ctrl_i		: IN  STD_LOGIC;	
-		MemtoReg_ctrl_i : IN 	STD_LOGIC;	
+		MemtoReg_ctrl_i 	: IN 	STD_LOGIC;	
 
 		-- ---- Selected write-back value -> IDECODE.writeback_data_i ----
-		writeback_data_o: OUT	STD_LOGIC_VECTOR(DATA_BUS_WIDTH-1 DOWNTO 0)
+		writeback_data_o	: OUT	STD_LOGIC_VECTOR(DATA_BUS_WIDTH-1 DOWNTO 0)
 	);
 END WB_MUX;
 
