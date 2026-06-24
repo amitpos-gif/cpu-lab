@@ -1,0 +1,92 @@
+================================================================================
+  LAB 5 - RV32IM SINGLE CYCLE - ISSUES FOUND & FIXES
+  Date: 2026-06-24
+================================================================================
+
+3 problems prevented the single cycle from compiling/simulating in ModelSim.
+
+================================================================================
+PROBLEM 1: Broken init_file path in IFETCH.VHD
+================================================================================
+
+FILE: DUT/RV32IM SINGLE CYCLE/IFETCH.VHD
+
+The init_file generic for the instruction memory (ITCM) had a broken path.
+The folder name "M9K-intel" was treated as the filename instead of a subfolder.
+
+  OLD (broken - file does not exist):
+    init_file => "C:\...\man_compiled\bin\M9K-intel.hex"
+
+  NEW (fixed - correct path):
+    init_file => "C:/Users/amitp/.../man_compiled/bin/M9K-intel/ITCM.hex"
+
+WHY IT MATTERS:
+  Without a valid init_file, the instruction memory is not initialized.
+  The CPU executes garbage/zeros instead of the test program, so the DTCM
+  output is meaningless.
+
+NOTE: DMEMORY.VHD had the correct DTCM path already - no fix needed there.
+
+================================================================================
+PROBLEM 2: No testbench existed for the single cycle
+================================================================================
+
+FILE: DUT/RV32IM SINGLE CYCLE/tb_RV32I_SC.vhd  (CREATED FROM SCRATCH)
+
+The pipeline testbench (tb_RV32I.vhd) instantiates rv32i_core_pipline, which
+is a completely different entity with pipeline-specific ports (IFpc_o, IDpc_o,
+EXpc_o, STRIGGER_o, FHCNT_o, STCNT_o, BPADDR_i, etc.).
+
+The single cycle core is RV32I_CORE with entirely different ports:
+  pc_o, instruction_o, RegWrite_ctrl_o, MemWrite_ctrl_o, Branch_ctrl_o,
+  read_data1_o, read_data2_o, write_data_o, alu_res_o, brTaken_o,
+  dtcm_addr_o, dtcm_data_wr_o, dtcm_data_rd_o, mclk_cnt_o
+
+A new testbench tb_RV32I_SC.vhd was written that:
+  - Instantiates RV32I_CORE as "CORE"
+  - Generates a 50 MHz clock (100 ns period)
+  - Asserts reset for 80 ns then releases it
+  - Connects all output ports to "open"
+
+================================================================================
+PROBLEM 3: MODELSIM generic defaults to FPGA/PLL mode
+================================================================================
+
+FILE: DUT/RV32IM SINGLE CYCLE/cond_compilation_package.vhd
+
+  constant G_MODELSIM : integer := 0;  -- 0=FPGA, 1=ModelSim
+
+When MODELSIM=0, the core instantiates the PLL component to derive the main
+clock from the input clock:
+
+  G0:
+  if (MODELSIM = 0) generate
+      MCLK: PLL PORT MAP (inclk0 => clk_i, c0 => mclk_w);  -- needs real PLL
+  else generate
+      mclk_w <= clk_i;                                       -- direct connection
+  end generate;
+
+In ModelSim there is no real PLL, so mclk_w would never toggle and the
+entire CPU would be stuck (no clock = no execution).
+
+FIX: The new testbench overrides this generic:
+  CORE : RV32I_CORE
+  generic map(
+      MODELSIM => 1,   -- bypass PLL, connect clock directly
+      ...
+  )
+
+This is NOT a bug in the source files - it is the intended design.
+The package constant is for FPGA synthesis; simulation must override it.
+
+================================================================================
+RESULT
+================================================================================
+
+After all 3 fixes, ModelSim compiled and simulated successfully:
+  - 0 errors, warnings only at Time=0ps (normal uninitialized signal noise)
+  - test1 (man_compiled): PASS - all 1024 DTCM words match RARS golden output
+
+================================================================================
+END OF SUMMARY
+================================================================================

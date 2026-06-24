@@ -54,7 +54,7 @@ BEGIN
 		lpm_hint 							=> "ENABLE_RUNTIME_MOD = YES,INSTANCE_NAME = ITCM",
 		lpm_type 							=> "altsyncram",
 		outdata_reg_a 						=> "UNREGISTERED",
-		init_file 							=> "C:\Users\123\Desktop\lab_arc\lab_5\Benchmark Apps\test1\RV32IM\man_compiled\bin\M9K-intel\ITCM.HEX",
+		init_file 							=> "C:\Users\amitp\OneDrive\Desktop\Comp_Lab\Lab_5\BENCHMARKS\test3\RV32IM\RV32IM SINGLE CYCLE\man_compiled\bin\M9K-intel\ITCM.hex",
 		intended_device_family	=> "Cyclone"
 	)
 	PORT MAP (

@@ -61,7 +61,7 @@ BEGIN
 		lpm_hint 								=> "ENABLE_RUNTIME_MOD = YES,INSTANCE_NAME = ITCM",
 		lpm_type 								=> "altsyncram",
 		outdata_reg_a 					=> "UNREGISTERED",
-		init_file 							=> "C:\TestPrograms\Quartus21_1\app_bin\ITCM.hex",
+		init_file 							=> "C:\Users\amitp\OneDrive\Desktop\Comp_Lab\Lab_5\BENCHMARKS\test4\RV32IM\RV32IM SINGLE CYCLE\man_compiled\bin\M9K-intel/ITCM.hex",
 		intended_device_family	=> "Cyclone"
 	)
 	PORT MAP (

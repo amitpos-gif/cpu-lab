@@ -52,6 +52,7 @@ ARCHITECTURE struct OF Execute IS
 	SIGNAL 	bin_w 					: STD_LOGIC_VECTOR(DATA_BUS_WIDTH-1 DOWNTO 0);
 	SIGNAL 	ain_pre_w				: STD_LOGIC_VECTOR(DATA_BUS_WIDTH-1 DOWNTO 0);	-- before forwarding override
 	SIGNAL 	bin_pre_w				: STD_LOGIC_VECTOR(DATA_BUS_WIDTH-1 DOWNTO 0);	-- before forwarding override
+	SIGNAL	fwd_rs2_w				: STD_LOGIC_VECTOR(DATA_BUS_WIDTH-1 DOWNTO 0);	-- forwarded rs2 value
 	SIGNAL 	sub_res_w 				: STD_LOGIC_VECTOR(DATA_BUS_WIDTH-1 DOWNTO 0);
 	SIGNAL 	ltu_res_w 				: STD_LOGIC;
 	SIGNAL 	eq_res_w				: STD_LOGIC;
@@ -103,11 +104,17 @@ WITH Forward_Ain_i SELECT
 						memwb_fwd_val_i				WHEN	"01",
 						ain_pre_w							WHEN	OTHERS;
 
+-- fwd_rs2_w: forwarded rs2 value (used as store data and as ALU-B when ALUSrc=0)
 WITH Forward_Bin_i SELECT
-	bin_w <= 	bin_pre_w							WHEN	"00",
-						exmem_fwd_val_i				WHEN	"10",
-						memwb_fwd_val_i				WHEN	"01",
-						bin_pre_w							WHEN	OTHERS;
+	fwd_rs2_w <= read_data2_i    WHEN "00",
+	             exmem_fwd_val_i WHEN "10",
+	             memwb_fwd_val_i WHEN "01",
+	             read_data2_i    WHEN OTHERS;
+
+-- bin_w: when ALUSrc=1 (SW/LW/ADDI/etc.) always use the sign-extended immediate
+-- so that Forward_Bin never corrupts the store/load address calculation.
+-- When ALUSrc=0 (R-type, branches) use the forwarded rs2 for the ALU.
+bin_w <= sign_extend_i(DATA_BUS_WIDTH-1 DOWNTO 0) WHEN ALUSrc_ctrl_i = '1' ELSE fwd_rs2_w;
 
 mulop7_w <= (others => '0') WHEN mulop_i = '0' ELSE "0000001"; -- 1 for MUL, 0 for no MUL
 

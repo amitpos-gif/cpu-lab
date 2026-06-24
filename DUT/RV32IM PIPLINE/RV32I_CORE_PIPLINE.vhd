@@ -120,16 +120,11 @@ ARCHITECTURE structure OF rv32i_core_pipline IS
 	SIGNAL ex_adder_gen_w      : STD_LOGIC_VECTOR(PC_WIDTH-1 DOWNTO 0);
 	SIGNAL ex_brjmp_taken_w    : STD_LOGIC;
 	SIGNAL ex_jalr_ctrl_w      : STD_LOGIC;
-	SIGNAL ex_ain_w            : STD_LOGIC_VECTOR(DATA_BUS_WIDTH-1 DOWNTO 0);
-	SIGNAL ex_bin_w            : STD_LOGIC_VECTOR(DATA_BUS_WIDTH-1 DOWNTO 0);
+	SIGNAL ex_fwd_rs2_w        : STD_LOGIC_VECTOR(DATA_BUS_WIDTH-1 DOWNTO 0);
 	SIGNAL ex_p0_w             : STD_LOGIC_VECTOR(15 DOWNTO 0);
 	SIGNAL ex_p1_w             : STD_LOGIC_VECTOR(15 DOWNTO 0);
 	SIGNAL ex_p2_w             : STD_LOGIC_VECTOR(15 DOWNTO 0);
 	SIGNAL ex_p3_w             : STD_LOGIC_VECTOR(15 DOWNTO 0);
-
-	-- MULOP is a 7-bit opcode-width port on the multiplier; we replicate the
-	-- 1-bit MULOp enable across all 7 bits so "/= 0" means "this is a mul".
-	SIGNAL ex_mulop7_w         : STD_LOGIC_VECTOR(6 DOWNTO 0);
 
 	--========================================================================
 	-- EX/MEM outputs (stage 4 inputs)
@@ -162,7 +157,6 @@ ARCHITECTURE structure OF rv32i_core_pipline IS
 	--========================================================================
 	SIGNAL mem_data_rd_w    : STD_LOGIC_VECTOR(DATA_BUS_WIDTH-1 DOWNTO 0);
 	SIGNAL mem_mul_res_w    : STD_LOGIC_VECTOR(DATA_BUS_WIDTH-1 DOWNTO 0);
-	SIGNAL mem_mulop7_w     : STD_LOGIC_VECTOR(6 DOWNTO 0);
 
 	--========================================================================
 	-- MEM/WB outputs (stage 5 inputs)
@@ -412,28 +406,20 @@ BEGIN
 			br_or_jump_taken_o=> ex_brjmp_taken_w,
 			alu_res_o         => ex_alu_res_w,
 			adder_gen_o       => ex_adder_gen_w,
-			ain_o             => ex_ain_w,
-			bin_o             => ex_bin_w
+			ex_mul_stg1_p0_o  => ex_p0_w,
+			ex_mul_stg1_p1_o  => ex_p1_w,
+			ex_mul_stg1_p2_o  => ex_p2_w,
+			ex_mul_stg1_p3_o  => ex_p3_w
 		);
 
-	--========================================================================
-	-- STAGE 3 : MUL_STAGE1 (partial products), fed by post-forward operands
-	--========================================================================
-	ex_mulop7_w <= (OTHERS => ex_MULOp_w);   -- replicate enable across opcode width
-
-	MUL1_inst : Mul_Stage1
-		generic map (
-			DATA_BUS_WIDTH => DATA_BUS_WIDTH
-		)
-		port map (
-			Ain   => ex_ain_w,
-			Bin   => ex_bin_w,
-			MULOP => ex_mulop7_w,
-			P0_o  => ex_p0_w,
-			P1_o  => ex_p1_w,
-			P2_o  => ex_p2_w,
-			P3_o  => ex_p3_w
-		);
+	-- Forwarded rs2 for store data: select the correct rs2 value using the
+	-- same forwarding control that Execute uses for Forward_Bin.
+	-- This is captured into EX/MEM read_data2 so DMEMORY gets the right value.
+	WITH fwd_Bin_w SELECT
+		ex_fwd_rs2_w <= ex_read_data2_w WHEN "00",
+		                mem_alu_res_w   WHEN "10",
+		                wb_writeback_w  WHEN "01",
+		                ex_read_data2_w WHEN OTHERS;
 
 	--========================================================================
 	-- EX/MEM pipeline register
@@ -450,7 +436,7 @@ BEGIN
 			stall_i            => stall_w,
 			pc_plus4_i         => ex_pc_plus4_w,
 			read_data1_i       => ex_read_data1_w,
-			read_data2_i       => ex_read_data2_w,
+			read_data2_i       => ex_fwd_rs2_w,
 			imm32_i            => ex_imm32_w,
 			rs1_i              => ex_rs1_w,
 			rs2_i              => ex_rs2_w,
@@ -511,30 +497,17 @@ BEGIN
 		port map (
 			clk_i           => clk_i,
 			rst_i           => rst_i,
-			dtcm_addr_i     => mem_alu_res_w(DTCM_ADDR_WIDTH-1 DOWNTO 0),
+			dtcm_addr_i     => mem_alu_res_w(DTCM_ADDR_WIDTH+1 DOWNTO 2),
 			dtcm_data_wr_i  => mem_read_data2_w,
 			MemRead_ctrl_i  => mem_MemRead_w,
 			MemWrite_ctrl_i => mem_MemWrite_w,
-			
+			mulop_i         => mem_MULOp_w,
+			mul_stg1_p0_i   => mem_p0_w,
+			mul_stg1_p1_i   => mem_p1_w,
+			mul_stg1_p2_i   => mem_p2_w,
+			mul_stg1_p3_i   => mem_p3_w,
+			mul_result_o    => mem_mul_res_w,
 			dtcm_data_rd_o  => mem_data_rd_w
-		);
-
-	--========================================================================
-	-- STAGE 4 : MUL_STAGE2 (combine partials -> 32-bit product)
-	--========================================================================
-	mem_mulop7_w <= (OTHERS => mem_MULOp_w);
-
-	MUL2_inst : MUL_STAGE2
-		generic map (
-			DATA_WIDTH => DATA_BUS_WIDTH
-		)
-		port map (
-			p0_i             => mem_p0_w,
-			p1_i             => mem_p1_w,
-			p2_i             => mem_p2_w,
-			p3_i             => mem_p3_w,
-			mulop_i          => mem_mulop7_w,
-			mul_stage1_res_o => mem_mul_res_w
 		);
 
 	--========================================================================

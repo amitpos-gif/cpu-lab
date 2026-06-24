@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(& \"C:\\\\Users\\\\amitp\\\\OneDrive\\\\Desktop\\\\Comp_Lab\\\\Lab_5\\\\SIM\\\\run_tests_2_3_4.ps1\")"
+    ]
+  }
+}

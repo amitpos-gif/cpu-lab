@@ -1,0 +1,414 @@
+m255
+K4
+z2
+!s11e vcom 2020.1 2020.02, Feb 28 2020
+13
+!s112 1.1
+!i10d 8192
+!i10e 25
+!i10f 100
+cModel Technology
+Z0 dC:/Users/amitp/OneDrive/Desktop/Comp_Lab/Lab_5/SIM
+Paux_package
+Z1 DPx4 work 24 cond_compilation_package 0 22 ?l9kmnoU1_BjHT`n:[87H1
+Z2 DPx3 std 6 textio 0 22 zE1`LPoLg^DX3Oz^4Fj1K3
+Z3 DPx4 ieee 14 std_logic_1164 0 22 cVAk:aDinOX8^VGI1ekP<3
+!i122 2
+Z4 w1782159704
+R0
+8C:/Users/amitp/OneDrive/Desktop/Comp_Lab/Lab_5/DUT/RV32IM SINGLE CYCLE/aux_package.vhd
+FC:/Users/amitp/OneDrive/Desktop/Comp_Lab/Lab_5/DUT/RV32IM SINGLE CYCLE/aux_package.vhd
+l0
+Z5 L10 1
+V[=e]Aez>dSQ=8@5j9`Ei02
+!s100 I7oUmP8e^P61P8PDgD@1c2
+Z6 OV;C;2020.1;71
+33
+Z7 !s110 1782297024
+!i10b 1
+Z8 !s108 1782297024.000000
+!s90 -work|work|-2008|-explicit|C:/Users/amitp/OneDrive/Desktop/Comp_Lab/Lab_5/DUT/RV32IM SINGLE CYCLE/aux_package.vhd|
+!s107 C:/Users/amitp/OneDrive/Desktop/Comp_Lab/Lab_5/DUT/RV32IM SINGLE CYCLE/aux_package.vhd|
+!i113 1
+Z9 o-work work -2008 -explicit
+Z10 tExplicit 1 CvgOpt 0
+Pcond_compilation_package
+R2
+R3
+!i122 0
+R4
+R0
+8C:/Users/amitp/OneDrive/Desktop/Comp_Lab/Lab_5/DUT/RV32IM SINGLE CYCLE/cond_compilation_package.vhd
+FC:/Users/amitp/OneDrive/Desktop/Comp_Lab/Lab_5/DUT/RV32IM SINGLE CYCLE/cond_compilation_package.vhd
+l0
+R5
+V?l9kmnoU1_BjHT`n:[87H1
+!s100 79U7T?Kki[J=m;imgBcPe2
+R6
+33
+R7
+!i10b 1
+R8
+!s90 -work|work|-2008|-explicit|C:/Users/amitp/OneDrive/Desktop/Comp_Lab/Lab_5/DUT/RV32IM SINGLE CYCLE/cond_compilation_package.vhd|
+!s107 C:/Users/amitp/OneDrive/Desktop/Comp_Lab/Lab_5/DUT/RV32IM SINGLE CYCLE/cond_compilation_package.vhd|
+!i113 1
+R9
+R10
+Pconst_package
+R1
+R2
+R3
+!i122 1
+R4
+R0
+8C:/Users/amitp/OneDrive/Desktop/Comp_Lab/Lab_5/DUT/RV32IM SINGLE CYCLE/const_package.vhd
+FC:/Users/amitp/OneDrive/Desktop/Comp_Lab/Lab_5/DUT/RV32IM SINGLE CYCLE/const_package.vhd
+l0
+L9 1
+V<UGm`mI0=IRNl;nFE4>LQ2
+!s100 30OY8R`cK3E8KVgTo2:hZ0
+R6
+33
+R7
+!i10b 1
+R8
+!s90 -work|work|-2008|-explicit|C:/Users/amitp/OneDrive/Desktop/Comp_Lab/Lab_5/DUT/RV32IM SINGLE CYCLE/const_package.vhd|
+!s107 C:/Users/amitp/OneDrive/Desktop/Comp_Lab/Lab_5/DUT/RV32IM SINGLE CYCLE/const_package.vhd|
+!i113 1
+R9
+R10
+Econtrol
+R4
+R1
+Z11 DPx4 work 13 const_package 0 22 <UGm`mI0=IRNl;nFE4>LQ2
+Z12 DPx4 ieee 16 std_logic_signed 0 22 C<aanc0R`<LWPSe[JYRP^3
+Z13 DPx4 ieee 15 std_logic_arith 0 22 [G314=:2zXJ`VORJe1J@Z1
+R2
+R3
+!i122 3
+R0
+Z14 8C:/Users/amitp/OneDrive/Desktop/Comp_Lab/Lab_5/DUT/RV32IM SINGLE CYCLE/CONTROL.VHD
+Z15 FC:/Users/amitp/OneDrive/Desktop/Comp_Lab/Lab_5/DUT/RV32IM SINGLE CYCLE/CONTROL.VHD
+l0
+Z16 L13 1
+VeYzMF75cJR4z9=bFK2LlB2
+!s100 VPSUm]HE[C[5N<@688m`E3
+R6
+33
+R7
+!i10b 1
+R8
+Z17 !s90 -work|work|-2008|-explicit|C:/Users/amitp/OneDrive/Desktop/Comp_Lab/Lab_5/DUT/RV32IM SINGLE CYCLE/CONTROL.VHD|
+Z18 !s107 C:/Users/amitp/OneDrive/Desktop/Comp_Lab/Lab_5/DUT/RV32IM SINGLE CYCLE/CONTROL.VHD|
+!i113 1
+R9
+R10
+Abehavior
+R1
+R11
+R12
+R13
+R2
+R3
+DEx4 work 7 control 0 22 eYzMF75cJR4z9=bFK2LlB2
+!i122 3
+l46
+L37 149
+Vc<CZG2UKSREP7CU3DVVe;3
+!s100 [nB3e?QB89Tei9a9G5]8B0
+R6
+33
+R7
+!i10b 1
+R8
+R17
+R18
+!i113 1
+R9
+R10
+Edmemory
+Z19 w1782296498
+Z20 DPx9 altera_mf 20 altera_mf_components 0 22 BN6nPmY:UEbXa[^5b@FTW1
+R12
+R13
+R2
+R3
+!i122 8
+R0
+Z21 8C:/Users/amitp/OneDrive/Desktop/Comp_Lab/Lab_5/DUT/RV32IM SINGLE CYCLE/DMEMORY.VHD
+Z22 FC:/Users/amitp/OneDrive/Desktop/Comp_Lab/Lab_5/DUT/RV32IM SINGLE CYCLE/DMEMORY.VHD
+l0
+Z23 L14 1
+VFXNF4NZj@_=J7obK=Pnd<1
+!s100 7UTmlNP6[:Hedd4SnRAzn2
+R6
+33
+Z24 !s110 1782297025
+!i10b 1
+Z25 !s108 1782297025.000000
+Z26 !s90 -work|work|-2008|-explicit|C:/Users/amitp/OneDrive/Desktop/Comp_Lab/Lab_5/DUT/RV32IM SINGLE CYCLE/DMEMORY.VHD|
+Z27 !s107 C:/Users/amitp/OneDrive/Desktop/Comp_Lab/Lab_5/DUT/RV32IM SINGLE CYCLE/DMEMORY.VHD|
+!i113 1
+R9
+R10
+Abehavior
+R20
+R12
+R13
+R2
+R3
+DEx4 work 7 dmemory 0 22 FXNF4NZj@_=J7obK=Pnd<1
+!i122 8
+l39
+L36 27
+VTf;;8`nL4VNBPN6:mNR9b2
+!s100 BEF@K<6T<Z2PHR^7m]4D73
+R6
+33
+R24
+!i10b 1
+R25
+R26
+R27
+!i113 1
+R9
+R10
+Eexecute
+Z28 w1782278951
+R1
+R11
+R12
+R13
+R2
+R3
+!i122 6
+R0
+Z29 8C:/Users/amitp/OneDrive/Desktop/Comp_Lab/Lab_5/DUT/RV32IM SINGLE CYCLE/EXECUTE.VHD
+Z30 FC:/Users/amitp/OneDrive/Desktop/Comp_Lab/Lab_5/DUT/RV32IM SINGLE CYCLE/EXECUTE.VHD
+l0
+R16
+V[^8^l0CzL5ldbHS4zMKTU1
+!s100 _3e[]IoE:^Gock`=P35D43
+R6
+33
+R24
+!i10b 1
+R25
+Z31 !s90 -work|work|-2008|-explicit|C:/Users/amitp/OneDrive/Desktop/Comp_Lab/Lab_5/DUT/RV32IM SINGLE CYCLE/EXECUTE.VHD|
+Z32 !s107 C:/Users/amitp/OneDrive/Desktop/Comp_Lab/Lab_5/DUT/RV32IM SINGLE CYCLE/EXECUTE.VHD|
+!i113 1
+R9
+R10
+Astruct
+R1
+R11
+R12
+R13
+R2
+R3
+DEx4 work 7 execute 0 22 [^8^l0CzL5ldbHS4zMKTU1
+!i122 6
+l58
+L36 267
+V@9e2>DHKMBe<o;UdVg7i]1
+!s100 O^mR0bOz?[d]NWGGeB8PD3
+R6
+33
+R24
+!i10b 1
+R25
+R31
+R32
+!i113 1
+R9
+R10
+Eidecode
+R4
+R1
+R11
+Z33 DPx4 ieee 18 std_logic_unsigned 0 22 ;eZjO2D4ZDz<]0>8AL<ne1
+R13
+R2
+R3
+!i122 4
+R0
+Z34 8C:/Users/amitp/OneDrive/Desktop/Comp_Lab/Lab_5/DUT/RV32IM SINGLE CYCLE/IDECODE.VHD
+Z35 FC:/Users/amitp/OneDrive/Desktop/Comp_Lab/Lab_5/DUT/RV32IM SINGLE CYCLE/IDECODE.VHD
+l0
+R23
+VJ<0c9:z_o9TG=6BQk7lY;0
+!s100 JCo>?ckTTFo^>HXEX5LBL1
+R6
+33
+R24
+!i10b 1
+R8
+Z36 !s90 -work|work|-2008|-explicit|C:/Users/amitp/OneDrive/Desktop/Comp_Lab/Lab_5/DUT/RV32IM SINGLE CYCLE/IDECODE.VHD|
+Z37 !s107 C:/Users/amitp/OneDrive/Desktop/Comp_Lab/Lab_5/DUT/RV32IM SINGLE CYCLE/IDECODE.VHD|
+!i113 1
+R9
+R10
+Abehavior
+R1
+R11
+R33
+R13
+R2
+R3
+DEx4 work 7 idecode 0 22 J<0c9:z_o9TG=6BQk7lY;0
+!i122 4
+l66
+L43 83
+VM?HcGEm[8HPS8?FnnSn141
+!s100 TX1@nUe@B?CRhUJFPFUaA3
+R6
+33
+R24
+!i10b 1
+R8
+R36
+R37
+!i113 1
+R9
+R10
+Eifetch
+R19
+R20
+R33
+R13
+R2
+R3
+!i122 5
+R0
+Z38 8C:/Users/amitp/OneDrive/Desktop/Comp_Lab/Lab_5/DUT/RV32IM SINGLE CYCLE/IFETCH.VHD
+Z39 FC:/Users/amitp/OneDrive/Desktop/Comp_Lab/Lab_5/DUT/RV32IM SINGLE CYCLE/IFETCH.VHD
+l0
+L15 1
+V_=^H?LZ1TZ:e]JWzPke3A2
+!s100 jNQdX][QgW>jYe?KdN9C=3
+R6
+33
+R24
+!i10b 1
+R25
+Z40 !s90 -work|work|-2008|-explicit|C:/Users/amitp/OneDrive/Desktop/Comp_Lab/Lab_5/DUT/RV32IM SINGLE CYCLE/IFETCH.VHD|
+Z41 !s107 C:/Users/amitp/OneDrive/Desktop/Comp_Lab/Lab_5/DUT/RV32IM SINGLE CYCLE/IFETCH.VHD|
+!i113 1
+R9
+R10
+Abehavior
+R20
+R33
+R13
+R2
+R3
+DEx4 work 6 ifetch 0 22 _=^H?LZ1TZ:e]JWzPke3A2
+!i122 5
+l51
+L42 91
+V4XK6JW:13KX;l2A_d?9EP3
+!s100 R=l^eEbAHG[JkS`?n9j[o2
+R6
+33
+R24
+!i10b 1
+R25
+R40
+R41
+!i113 1
+R9
+R10
+Emul
+R4
+R33
+R13
+R2
+R3
+!i122 7
+R0
+Z42 8C:/Users/amitp/OneDrive/Desktop/Comp_Lab/Lab_5/DUT/RV32IM SINGLE CYCLE/MUL.vhd
+Z43 FC:/Users/amitp/OneDrive/Desktop/Comp_Lab/Lab_5/DUT/RV32IM SINGLE CYCLE/MUL.vhd
+l0
+L17 1
+V2WLLiVKzz4I32TLMn4zW>3
+!s100 kc7Al;kggd8[HSDRP6z6<1
+R6
+33
+R24
+!i10b 1
+R25
+Z44 !s90 -work|work|-2008|-explicit|C:/Users/amitp/OneDrive/Desktop/Comp_Lab/Lab_5/DUT/RV32IM SINGLE CYCLE/MUL.vhd|
+Z45 !s107 C:/Users/amitp/OneDrive/Desktop/Comp_Lab/Lab_5/DUT/RV32IM SINGLE CYCLE/MUL.vhd|
+!i113 1
+R9
+R10
+Abehavior
+R33
+R13
+R2
+R3
+DEx4 work 3 mul 0 22 2WLLiVKzz4I32TLMn4zW>3
+!i122 7
+l42
+L32 29
+Vm@R;J9^gJ@KRG1DmAY6@A0
+!s100 _O?Nc6ezXflc_0l]MIllW3
+R6
+33
+R24
+!i10b 1
+R25
+R44
+R45
+!i113 1
+R9
+R10
+Erv32i_core
+R4
+Z46 DPx4 work 11 aux_package 0 22 [=e]Aez>dSQ=8@5j9`Ei02
+R1
+R33
+R13
+R2
+R3
+!i122 9
+R0
+Z47 8C:/Users/amitp/OneDrive/Desktop/Comp_Lab/Lab_5/DUT/RV32IM SINGLE CYCLE/RV32I_CORE.vhd
+Z48 FC:/Users/amitp/OneDrive/Desktop/Comp_Lab/Lab_5/DUT/RV32IM SINGLE CYCLE/RV32I_CORE.vhd
+l0
+R23
+V>m2oY:M7Ud<RPARXHcXSA1
+!s100 B:Wk@=HTI<6=m>2fXoaYV2
+R6
+33
+R24
+!i10b 1
+R25
+Z49 !s90 -work|work|-2008|-explicit|C:/Users/amitp/OneDrive/Desktop/Comp_Lab/Lab_5/DUT/RV32IM SINGLE CYCLE/RV32I_CORE.vhd|
+!s107 C:/Users/amitp/OneDrive/Desktop/Comp_Lab/Lab_5/DUT/RV32IM SINGLE CYCLE/RV32I_CORE.vhd|
+!i113 1
+R9
+R10
+Astructure
+R46
+R1
+R33
+R13
+R2
+R3
+DEx4 work 10 rv32i_core 0 22 >m2oY:M7Ud<RPARXHcXSA1
+!i122 9
+l85
+L54 232
+Vj1DVQURhkBmGnF_21BAH83
+!s100 l]Zb7L30?a0ZEB6Oi9A363
+R6
+33
+R24
+!i10b 1
+R25
+R49
+Z50 !s107 C:/Users/amitp/OneDrive/Desktop/Comp_Lab/Lab_5/DUT/RV32IM SINGLE CYCLE/RV32I_CORE.vhd|
+!i113 1
+R9
+R10

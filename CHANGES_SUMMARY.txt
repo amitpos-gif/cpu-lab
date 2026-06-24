@@ -1,0 +1,240 @@
+================================================================================
+  LAB 5 - RV32IM PIPELINE - BUG FIXES SUMMARY
+  Date: 2026-06-24
+================================================================================
+
+PROBLEM
+-------
+ModelSim simulation produced wrong DTCM output. The pipeline CPU was not
+computing correct results for ADD, MUL, and XOR operations on the test arrays.
+
+FINAL RESULT
+------------
+After all fixes, ModelSim output matches the RARS golden reference exactly:
+  - arr1 (words 0x00-0x07):  1,2,3,4,5,6,7,8         [unchanged, correct]
+  - arr2 (words 0x08-0x0F):  8,7,6,5,4,3,2,1         [unchanged, correct]
+  - res1 (words 0x10-0x17):  9,9,9,9,9,9,9,9         [ADD results, correct]
+  - res2 (words 0x18-0x1F):  8,E,12,14,14,12,E,8     [MUL results, correct]
+  - res3 (words 0x20-0x27):  9,5,5,1,1,5,5,9         [XOR results, correct]
+  - SIZE (word 0x28):         8                        [correct]
+
+================================================================================
+FILE 1: DUT/RV32IM PIPLINE/IFETCH.VHD
+================================================================================
+
+CHANGE: Fixed init_file path for instruction memory (ITCM).
+
+The path was hardcoded to another developer's machine.
+
+  OLD:
+    init_file => "C:\Users\123\Desktop\lab_arc\lab_5\Benchmark Apps\test1\
+                  RV32IM\man_compiled\bin\M9K-intel\ITCM.HEX",
+
+  NEW:
+    init_file => "C:\Users\amitp\OneDrive\Desktop\Comp_Lab\Lab_5\BENCHMARKS\
+                  test1\RV32IM\RV32IM PIPELINE\man_compiled\bin\M9K-intel\ITCM.hex",
+
+WHY: Without a valid init_file path, the instruction memory was not initialized,
+so the CPU executed garbage instructions instead of the test program.
+
+================================================================================
+FILE 2: DUT/RV32IM PIPLINE/DMEMORY.VHD
+================================================================================
+
+CHANGE: Fixed init_file path for data memory (DTCM).
+
+Same problem as IFETCH - path pointed to another developer's machine.
+
+  OLD:
+    init_file => "C:\Users\123\Desktop\lab_arc\lab_5\Benchmark Apps\test1\
+                  RV32IM\man_compiled\bin\M9K-intel\DTCM.HEX",
+
+  NEW:
+    init_file => "C:\Users\amitp\OneDrive\Desktop\Comp_Lab\Lab_5\BENCHMARKS\
+                  test1\RV32IM\RV32IM PIPELINE\man_compiled\bin\M9K-intel\DTCM.hex",
+
+WHY: The initial data arrays (arr1, arr2) and SIZE value are loaded from DTCM.hex
+at simulation start. Wrong path = memory initialized to all zeros.
+
+================================================================================
+FILE 3: DUT/RV32IM PIPLINE/RV32I_CORE_PIPLINE.vhd
+================================================================================
+
+Five separate bugs were fixed in this file.
+
+--- BUG 3.1: DTCM address not shifted right by 2 ---
+
+RISC-V uses byte addressing, but the M9K altsyncram is word-addressed.
+The ALU produces a byte address; it must be divided by 4 (>>2) for DTCM.
+
+  OLD (wrong - treated byte address as word address):
+    dtcm_addr_i => mem_alu_res_w(DTCM_ADDR_WIDTH-1 DOWNTO 0),
+
+  NEW (correct - takes bits [DTCM_ADDR_WIDTH+1:2], i.e., >>2):
+    dtcm_addr_i => mem_alu_res_w(DTCM_ADDR_WIDTH+1 DOWNTO 2),
+
+WHY: Without the shift, a SW to byte address 64 (word 16) would write to
+word 64 instead of word 16 - all store addresses were 4x too large.
+
+--- BUG 3.2: DMEM_inst missing MUL ports ---
+
+The DMEMORY entity has ports for the 2-stage multiplier (MUL_STAGE2 lives
+inside DMEMORY), but they were absent from the DMEM_inst port map, causing
+a VHDL compilation error.
+
+  ADDED to DMEM_inst port map:
+    mulop_i         => mem_MULOp_w,
+    mul_stg1_p0_i   => mem_p0_w,
+    mul_stg1_p1_i   => mem_p1_w,
+    mul_stg1_p2_i   => mem_p2_w,
+    mul_stg1_p3_i   => mem_p3_w,
+    mul_result_o    => mem_mul_res_w,
+
+  ALSO ADDED generic map to DMEM_inst:
+    generic map (
+        DATA_BUS_WIDTH  => DATA_BUS_WIDTH,
+        DTCM_ADDR_WIDTH => DTCM_ADDR_WIDTH,
+        WORDS_NUM       => DATA_WORDS_NUM
+    )
+
+--- BUG 3.3: Duplicate MUL_STAGE2 instantiation ---
+
+The core had a separate MUL2_inst block for MUL_STAGE2, but DMEMORY
+already instantiates MUL_STAGE2 internally. The duplicate caused a
+double-MUL and signal conflicts.
+
+  REMOVED the entire block:
+    mem_mulop7_w <= (OTHERS => mem_MULOp_w);
+    MUL2_inst : MUL_STAGE2
+        port map (p0_i => ..., ..., mul_stage1_res_o => mem_mul_res_w);
+
+  ALSO REMOVED signal declarations:
+    SIGNAL mem_mulop7_w : STD_LOGIC_VECTOR(6 DOWNTO 0);
+
+--- BUG 3.4: EXECUTE_inst port map used non-existent ports ---
+
+The EXECUTE_inst port map referenced ain_o and bin_o, which do not exist
+in the Execute entity. Execute already runs MUL_STAGE1 internally and
+exposes the partial products directly as ex_mul_stg1_p*_o.
+
+  REMOVED (ports don't exist in Execute entity):
+    ain_o => ex_ain_w,
+    bin_o => ex_bin_w
+
+  ADDED (correct outputs from Execute):
+    ex_mul_stg1_p0_o => ex_p0_w,
+    ex_mul_stg1_p1_o => ex_p1_w,
+    ex_mul_stg1_p2_o => ex_p2_w,
+    ex_mul_stg1_p3_o => ex_p3_w
+
+  REMOVED signal declarations (no longer needed):
+    SIGNAL ex_ain_w    : STD_LOGIC_VECTOR(DATA_BUS_WIDTH-1 DOWNTO 0);
+    SIGNAL ex_bin_w    : STD_LOGIC_VECTOR(DATA_BUS_WIDTH-1 DOWNTO 0);
+    SIGNAL ex_mulop7_w : STD_LOGIC_VECTOR(6 DOWNTO 0);
+
+  REMOVED separate MUL1_inst block (Execute handles it internally):
+    MUL1_inst : Mul_Stage1
+        port map (Ain => ex_ain_w, Bin => ex_bin_w, ...);
+
+--- BUG 3.5: Store data not forwarded to DMEMORY ---
+
+For SW instructions, the store data (rs2) was taken directly from the
+EX/MEM pipeline register's raw read_data2 field, which holds the value
+read from the register file when the SW was in the ID stage. If a
+previous instruction wrote rs2 and hasn't yet reached WB, this is stale.
+
+The fix computes the correctly forwarded rs2 in the core (using the same
+fwd_Bin_w control signal already produced by the forwarding unit) and
+feeds it into the EX/MEM register's read_data2 input instead.
+
+  ADDED signal:
+    SIGNAL ex_fwd_rs2_w : STD_LOGIC_VECTOR(DATA_BUS_WIDTH-1 DOWNTO 0);
+
+  ADDED concurrent statement (before EX_MEM_inst):
+    WITH fwd_Bin_w SELECT
+        ex_fwd_rs2_w <= ex_read_data2_w  WHEN "00",   -- no hazard
+                        mem_alu_res_w    WHEN "10",   -- forward from EX/MEM
+                        wb_writeback_w   WHEN "01",   -- forward from MEM/WB
+                        ex_read_data2_w  WHEN OTHERS;
+
+  CHANGED in EX_MEM_inst port map:
+    OLD: read_data2_i => ex_read_data2_w,
+    NEW: read_data2_i => ex_fwd_rs2_w,
+
+WHY: Without this fix, SW after ADD stores a stale (often 0) value instead
+of the just-computed result. SW after MUL similarly stores the wrong value.
+This affected all three result arrays (res1/ADD, res2/MUL, res3/XOR).
+
+================================================================================
+FILE 4: DUT/RV32IM PIPLINE/EXECUTE.VHD
+================================================================================
+
+CHANGE: Fixed bin_w (ALU B-input) to always use the sign-extended immediate
+when ALUSrc=1, preventing Forward_Bin from corrupting SW/LW addresses.
+
+PROBLEM: For SW t5, 0(t2), the forwarding unit sets Forward_Bin="10"
+because SW's rs2=t5 matches the previous ADD instruction's rd=t5.
+The old code then set bin_w = forwarded ADD result (e.g. 9) instead of
+the immediate (0). So the ALU computed t2+9 instead of t2+0, storing
+to the wrong word address entirely.
+
+  ADDED internal signal:
+    SIGNAL fwd_rs2_w : STD_LOGIC_VECTOR(DATA_BUS_WIDTH-1 DOWNTO 0);
+
+  REPLACED old bin_w selection logic:
+
+    OLD:
+      bin_pre_w <= read_data2_i WHEN not ALUSrc_ctrl_i
+                   ELSE sign_extend_i(DATA_BUS_WIDTH-1 DOWNTO 0);
+
+      WITH Forward_Bin_i SELECT
+          bin_w <= bin_pre_w     WHEN "00",
+                   exmem_fwd_val_i WHEN "10",
+                   memwb_fwd_val_i WHEN "01",
+                   bin_pre_w     WHEN OTHERS;
+
+    NEW:
+      -- Forward the raw rs2 register (independent of ALUSrc)
+      WITH Forward_Bin_i SELECT
+          fwd_rs2_w <= read_data2_i    WHEN "00",
+                       exmem_fwd_val_i WHEN "10",
+                       memwb_fwd_val_i WHEN "01",
+                       read_data2_i    WHEN OTHERS;
+
+      -- ALUSrc=1 (SW/LW/ADDI): always use immediate for the ALU
+      -- ALUSrc=0 (R-type, branches): use forwarded rs2 for the ALU
+      bin_w <= sign_extend_i(DATA_BUS_WIDTH-1 DOWNTO 0)
+               WHEN ALUSrc_ctrl_i = '1' ELSE fwd_rs2_w;
+
+WHY: SW and LW instructions must compute address = rs1 + immediate.
+     Forwarding for rs2 must not override the immediate in bin_w.
+     The forwarded rs2 value (fwd_rs2_w) is still computed and used
+     separately as the store data (via ex_fwd_rs2_w in the core).
+
+================================================================================
+FILE 5: SIM/RV32I_batch.do
+================================================================================
+
+This file was created/rewritten from scratch as a headless batch simulation
+script. Key fixes vs the original broken state:
+
+1. FIXED $SRC path - now points to the correct subdirectory:
+     set SRC "C:/Users/amitp/OneDrive/Desktop/Comp_Lab/Lab_5/DUT/RV32IM PIPLINE"
+
+2. FIXED path quoting - all vcom calls now quote the path to handle spaces:
+     vcom ... "$SRC/IFETCH.VHD"   (not $SRC/IFETCH.VHD)
+
+3. REMOVED MUL2 from wave list (MUL2_inst no longer exists in core).
+
+4. ADDED quit -f at the end so ModelSim exits immediately without
+   waiting for interactive confirmation (was causing the process to hang).
+
+5. REDUCED run time from 500 us to 20 us. The 8-iteration test loop
+   completes in ~4 us at 50 MHz; 20 us is more than sufficient and
+   avoids the simulation running indefinitely.
+
+6. CORRECTED mem save path to the right output directory.
+
+================================================================================
+END OF CHANGES SUMMARY
+================================================================================
