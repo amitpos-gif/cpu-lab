@@ -210,7 +210,24 @@ ARCHITECTURE structure OF rv32i_core_pipline IS
 	SIGNAL fhcnt_q      : STD_LOGIC_VECTOR(7 DOWNTO 0);
 	SIGNAL strigger_w   : STD_LOGIC;
 
+	-- PLL output clock (mclk_w = clk_i in ModelSim, PLL-derived on FPGA)
+	SIGNAL mclk_w       : STD_LOGIC;
+
 BEGIN
+
+	--========================================================================
+	-- PLL: bypass in ModelSim, use PLL on FPGA
+	--========================================================================
+	G0:
+	if (MODELSIM = 0) generate
+		MCLK : PLL
+		PORT MAP (
+			inclk0 => clk_i,
+			c0     => mclk_w
+		);
+	else generate
+		mclk_w <= clk_i;
+	end generate;
 
 	--========================================================================
 	-- Hazard enable derivation
@@ -234,7 +251,7 @@ BEGIN
 			WORDS_NUM        => DATA_WORDS_NUM
 		)
 		port map (
-			clk_i              => clk_i,
+			clk_i              => mclk_w,
 			rst_i              => rst_i,
 			ena_i              => pcwrite_ena_w,
 			-- redirect comes from REGISTERED EX/MEM outputs (resolved at stage 4)
@@ -256,7 +273,7 @@ BEGIN
 			PC_WIDTH       => PC_WIDTH
 		)
 		port map (
-			clk_i         => clk_i,
+			clk_i         => mclk_w,
 			rst_i         => rst_i,
 			ena_i         => ifid_ena_w,
 			flush_i       => flush_w,
@@ -301,7 +318,7 @@ BEGIN
 			DATA_BUS_WIDTH => DATA_BUS_WIDTH
 		)
 		port map (
-			clk_i            => clk_i,
+			clk_i            => mclk_w,
 			rst_i            => rst_i,
 			instruction_i    => id_instruction_w,
 			RegDst_i         => wb_RegDst_w,
@@ -327,7 +344,7 @@ BEGIN
 			PC_WIDTH       => PC_WIDTH
 		)
 		port map (
-			clk_i        => clk_i,
+			clk_i        => mclk_w,
 			rst_i        => rst_i,
 			flush_i      => flush_w,
 			stall_i      => stall_w,
@@ -430,7 +447,7 @@ BEGIN
 			PC_WIDTH       => PC_WIDTH
 		)
 		port map (
-			clk_i              => clk_i,
+			clk_i              => mclk_w,
 			rst_i              => rst_i,
 			flush_i            => flush_w,
 			stall_i            => stall_w,
@@ -519,7 +536,7 @@ BEGIN
 			PC_WIDTH       => PC_WIDTH
 		)
 		port map (
-			clk_i       => clk_i,
+			clk_i       => mclk_w,
 			rst_i       => rst_i,
 			pc_plus4_i  => mem_pc_plus4_w,
 			alu_res_i   => mem_alu_res_w,
@@ -604,9 +621,9 @@ BEGIN
 	-- This lets us tap EX/MEM/WB-stage instructions without widening the
 	-- datapath registers.
 	--========================================================================
-	DBG_SHADOW : PROCESS(clk_i)
+	DBG_SHADOW : PROCESS(mclk_w)
 	BEGIN
-		IF (clk_i'EVENT AND clk_i = '1') THEN
+		IF (mclk_w'EVENT AND mclk_w = '1') THEN
 			IF (rst_i = '1') THEN
 				instr_id_q  <= NOP_INSTR;
 				instr_ex_q  <= NOP_INSTR;
@@ -652,9 +669,9 @@ BEGIN
 	--========================================================================
 	-- Figure-8 counters + Signal-Tap trigger
 	--========================================================================
-	INSTR_COUNTERS : PROCESS(clk_i)
+	INSTR_COUNTERS : PROCESS(mclk_w)
 	BEGIN
-		IF (clk_i'EVENT AND clk_i = '1') THEN
+		IF (mclk_w'EVENT AND mclk_w = '1') THEN
 			IF (rst_i = '1') THEN
 				clkcnt_q <= (OTHERS => '0');
 				stcnt_q  <= (OTHERS => '0');

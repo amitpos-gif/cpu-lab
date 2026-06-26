@@ -446,4 +446,16 @@ END COMPONENT;
 		);
 	END COMPONENT;
 
+	--========================================================================
+	-- PLL (clock synthesizer, used on FPGA; bypassed in ModelSim)
+	--========================================================================
+	COMPONENT PLL IS
+		PORT(
+			areset : IN  STD_LOGIC := '0';
+			inclk0 : IN  STD_LOGIC := '0';
+			c0     : OUT STD_LOGIC;
+			locked : OUT STD_LOGIC
+		);
+	END COMPONENT;
+
 END aux_package;
